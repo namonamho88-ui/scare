@@ -25,10 +25,10 @@
 <!-- ========================================================
      Mobile App Shell Container
 ======================================================== -->
-<div id="app" class="max-w-md mx-auto min-h-screen bg-slate-900 border-x border-slate-800 flex flex-col relative pb-24 shadow-2xl">
+<div id="app">
 
   <!-- 1. Top Mobile Header -->
-  <header class="sticky top-0 z-40 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+  <header class="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -44,13 +44,13 @@
 
     <div class="flex items-center gap-1.5">
       <!-- AI Engine Status Pill -->
-      <button id="ai-settings-toggle" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-medium active:scale-95 transition">
-        <span id="ai-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <button onclick="appOpenAiSettings()" id="ai-settings-toggle" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-medium active:scale-95 transition">
+        <span id="ai-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
         <span id="ai-model-label" class="font-mono text-[10px] text-blue-300">스마트 AI</span>
       </button>
 
       <!-- Excel Export -->
-      <button id="export-excel-btn" title="엑셀 다운로드" class="p-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 active:scale-95 transition">
+      <button onclick="appExportExcel()" id="export-excel-btn" title="엑셀 다운로드" class="p-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 active:scale-95 transition">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
       </button>
     </div>
@@ -85,12 +85,12 @@
             <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
             장애 알림 SMS / 로그 입력
           </span>
-          <button id="clear-sms-btn" class="text-[11px] text-slate-400 hover:text-slate-200">초기화</button>
+          <button onclick="appClearSms()" class="text-[11px] text-slate-400 hover:text-slate-200">초기화</button>
         </div>
 
         <!-- Sample Buttons (Horizontally scrollable for mobile) -->
         <div class="space-y-1.5">
-          <span class="text-[10px] text-slate-500 font-medium">💡 빠른 테스트용 샘플 데이터 선택:</span>
+          <span class="text-[10px] text-slate-500 font-medium">💡 빠른 테스트용 샘플 데이터 선택 (원터치):</span>
           <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
             <button onclick="appLoadSample('timeout')" class="sample-chip whitespace-nowrap text-[11px] px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 active:scale-95 transition">
               샘플1: 해외할부 임계치초과
@@ -117,14 +117,14 @@
         </div>
 
         <!-- Parse Button -->
-        <button id="run-parse-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition">
+        <button onclick="appRunParse()" id="run-parse-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition">
           <svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           <span id="run-parse-btn-text">Gemini AI 지능형 자동 파싱 실행</span>
         </button>
       </div>
 
       <!-- Duplicate Alert Banner -->
-      <div id="duplicate-banner" class="hidden bg-amber-950/60 border border-amber-800 rounded-xl p-3 text-xs text-amber-300 space-y-1">
+      <div id="duplicate-banner" style="display: none;" class="bg-amber-950/60 border border-amber-800 rounded-xl p-3 text-xs text-amber-300 space-y-1">
         <div class="font-bold flex items-center gap-1">
           <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           동일 장애이력 중복 알림
@@ -133,7 +133,7 @@
       </div>
 
       <!-- Semantic Vector RAG Similar Incidents -->
-      <div id="similar-rag-box" class="hidden bg-violet-950/40 border border-violet-800/80 rounded-2xl p-3.5 space-y-2.5">
+      <div id="similar-rag-box" style="display: none;" class="bg-violet-950/40 border border-violet-800/80 rounded-2xl p-3.5 space-y-2.5">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-violet-300 flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
@@ -145,7 +145,7 @@
       </div>
 
       <!-- Parsed Details & AI Diagnosis Result Card -->
-      <div id="parsed-result-card" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-4 shadow-xl">
+      <div id="parsed-result-card" style="display: none;" class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-4 shadow-xl">
         <div class="flex justify-between items-center pb-2 border-b border-slate-800">
           <div class="flex items-center gap-2">
             <span id="res-severity-badge" class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-red-950 text-red-400 border border-red-800">CRITICAL</span>
@@ -188,7 +188,7 @@
               <svg class="w-3.5 h-3.5 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               Gemini AI 정밀 진단 & 표준 조치
             </span>
-            <button id="res-ai-rediagnose-btn" class="text-[10px] bg-violet-600 hover:bg-violet-500 text-white px-2 py-1 rounded-lg active:scale-95 transition">AI 재진단</button>
+            <button onclick="appRunParse()" id="res-ai-rediagnose-btn" class="text-[10px] bg-violet-600 hover:bg-violet-500 text-white px-2 py-1 rounded-lg active:scale-95 transition">AI 재진단</button>
           </div>
 
           <!-- Cause Candidates -->
@@ -235,14 +235,14 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-2 pt-1">
-          <button id="res-cancel-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 active:scale-95 transition">
+          <button onclick="appCancelParsed()" id="res-cancel-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 active:scale-95 transition">
             취소
           </button>
-          <button id="res-share-btn" class="px-3 py-2.5 bg-yellow-950 hover:bg-yellow-900 border border-yellow-800 rounded-xl text-xs font-semibold text-yellow-400 active:scale-95 transition flex items-center gap-1">
+          <button onclick="appShareMessenger()" id="res-share-btn" class="px-3 py-2.5 bg-yellow-950 hover:bg-yellow-900 border border-yellow-800 rounded-xl text-xs font-semibold text-yellow-400 active:scale-95 transition flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
             공유
           </button>
-          <button id="res-save-btn" class="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-xl text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-1">
+          <button onclick="appSaveToMaster()" id="res-save-btn" class="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-xl text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-1">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             마스터에 적재
           </button>
@@ -254,7 +254,7 @@
     <!-- ==========================================
          TAB 2: MASTER LIST (마스터 DB)
     ========================================== -->
-    <section id="tab-master" class="tab-page hidden space-y-3">
+    <section id="tab-master" style="display: none;" class="tab-page space-y-3">
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-xs font-bold text-slate-200">장애이력 마스터 DB</h2>
@@ -267,7 +267,7 @@
 
       <!-- Search Input -->
       <div class="relative">
-        <input id="master-search-input" type="text" placeholder="IF아이디, 기관, 에러코드, 제목, 담당자 검색..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input id="master-search-input" oninput="renderMasterList()" type="text" placeholder="IF아이디, 기관, 에러코드, 제목, 담당자 검색..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
 
       <!-- Filter Pills -->
@@ -281,7 +281,7 @@
       <!-- Master Items List -->
       <div id="master-items-container" class="space-y-2.5"></div>
       
-      <div id="master-empty-msg" class="hidden text-center py-12 text-slate-500 text-xs">
+      <div id="master-empty-msg" style="display: none;" class="text-center py-12 text-slate-500 text-xs">
         일치하는 장애이력이 없습니다.
       </div>
     </section>
@@ -289,7 +289,7 @@
     <!-- ==========================================
          TAB 3: DASHBOARD (추진현황)
     ========================================== -->
-    <section id="tab-status" class="tab-page hidden space-y-3.5">
+    <section id="tab-status" style="display: none;" class="tab-page space-y-3.5">
       <div>
         <h2 class="text-xs font-bold text-slate-200">추진현황 & 지능형 분석</h2>
         <p class="text-[10px] text-slate-400">지식 구축 지표 및 장애 분포</p>
@@ -334,7 +334,7 @@
     <!-- ==========================================
          TAB 4: AI HUB (질의응답 & 리포트)
     ========================================== -->
-    <section id="tab-ai" class="tab-page hidden space-y-3.5">
+    <section id="tab-ai" style="display: none;" class="tab-page space-y-3.5">
       <div>
         <h2 class="text-xs font-bold text-slate-200">Gemini AI 지식 어시스턴트</h2>
         <p class="text-[10px] text-slate-400">마스터 시트 실시간 RAG 자연어 질의응답 및 Executive 리포트</p>
@@ -364,13 +364,13 @@
         </div>
 
         <div class="flex gap-1.5">
-          <input id="ai-chat-input" type="text" placeholder="궁금한 장애이력이나 조치절차를 질문하세요..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-          <button id="ai-chat-send-btn" class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white active:scale-95 transition">
+          <input id="ai-chat-input" onkeydown="if(event.key==='Enter')appHandleAiChat()" type="text" placeholder="궁금한 장애이력이나 조치절차를 질문하세요..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          <button onclick="appHandleAiChat()" id="ai-chat-send-btn" class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white active:scale-95 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>
         </div>
 
-        <div id="ai-chat-result" class="hidden bg-slate-900/90 border border-blue-900/40 rounded-xl p-3 text-xs leading-relaxed space-y-2"></div>
+        <div id="ai-chat-result" style="display: none;" class="bg-slate-900/90 border border-blue-900/40 rounded-xl p-3 text-xs leading-relaxed space-y-2"></div>
       </div>
 
       <!-- Executive Report Card -->
@@ -380,13 +380,13 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Executive 종합 리포트
           </span>
-          <button id="run-ai-report-btn" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold active:scale-95 transition">
+          <button onclick="appRunAiReport()" id="run-ai-report-btn" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold active:scale-95 transition">
             리포트 생성
           </button>
         </div>
 
-        <div id="ai-report-output" class="hidden bg-slate-900/90 border border-emerald-900/40 rounded-xl p-3 text-xs leading-relaxed space-y-2"></div>
-        <button id="copy-ai-report-btn" class="hidden w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 font-medium active:scale-95 transition">
+        <div id="ai-report-output" style="display: none;" class="bg-slate-900/90 border border-emerald-900/40 rounded-xl p-3 text-xs leading-relaxed space-y-2"></div>
+        <button onclick="appCopyAiReport()" id="copy-ai-report-btn" style="display: none;" class="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 font-medium active:scale-95 transition">
           리포트 텍스트 복사
         </button>
       </div>
@@ -397,21 +397,21 @@
   <!-- ========================================================
        4. Fixed Bottom Mobile Navigation Bar
   ======================================================== -->
-  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/95 backdrop-blur border-t border-slate-800 flex justify-around items-center py-2 px-1 z-40">
-    <button onclick="appSwitchTab('collector')" class="bottom-nav-item active flex flex-col items-center gap-1 py-1 px-3 text-blue-400 transition" data-target-tab="collector">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+  <nav class="bottom-nav">
+    <button onclick="appSwitchTab('collector')" class="bottom-nav-item active" data-target-tab="collector">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
       <span class="text-[10px] font-bold">수집/파싱</span>
     </button>
-    <button onclick="appSwitchTab('master')" class="bottom-nav-item flex flex-col items-center gap-1 py-1 px-3 text-slate-400 transition" data-target-tab="master">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+    <button onclick="appSwitchTab('master')" class="bottom-nav-item" data-target-tab="master">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
       <span class="text-[10px] font-medium">마스터DB</span>
     </button>
-    <button onclick="appSwitchTab('status')" class="bottom-nav-item flex flex-col items-center gap-1 py-1 px-3 text-slate-400 transition" data-target-tab="status">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+    <button onclick="appSwitchTab('status')" class="bottom-nav-item" data-target-tab="status">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
       <span class="text-[10px] font-medium">추진현황</span>
     </button>
-    <button onclick="appSwitchTab('ai')" class="bottom-nav-item flex flex-col items-center gap-1 py-1 px-3 text-slate-400 transition" data-target-tab="ai">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    <button onclick="appSwitchTab('ai')" class="bottom-nav-item" data-target-tab="ai">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
       <span class="text-[10px] font-medium">AI어시스턴트</span>
     </button>
   </nav>
@@ -419,7 +419,7 @@
   <!-- ========================================================
        MODAL 1: Edit Master Item Modal
   ======================================================== -->
-  <div id="modal-edit" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div id="modal-edit" style="display: none;" class="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-950 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center">
         <div>
@@ -432,8 +432,8 @@
       <div id="edit-modal-fields" class="p-4 space-y-3 overflow-y-auto flex-1 text-xs"></div>
 
       <div class="p-3 border-t border-slate-800 flex gap-2">
-        <button id="edit-delete-btn" class="flex-1 py-2 rounded-xl bg-red-950 text-red-400 border border-red-800 text-xs font-semibold active:scale-95">삭제</button>
-        <button id="edit-save-btn" class="flex-[2] py-2 rounded-xl bg-blue-600 text-white text-xs font-bold active:scale-95">수정 저장</button>
+        <button onclick="appDeleteEditItem()" id="edit-delete-btn" class="flex-1 py-2 rounded-xl bg-red-950 text-red-400 border border-red-800 text-xs font-semibold active:scale-95">삭제</button>
+        <button onclick="appSaveEditItem()" id="edit-save-btn" class="flex-[2] py-2 rounded-xl bg-blue-600 text-white text-xs font-bold active:scale-95">수정 저장</button>
       </div>
     </div>
   </div>
@@ -441,7 +441,7 @@
   <!-- ========================================================
        MODAL 2: AI Settings Modal
   ======================================================== -->
-  <div id="modal-ai-settings" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+  <div id="modal-ai-settings" style="display: none;" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
     <div class="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-sm p-4 space-y-3.5 shadow-2xl">
       <div class="flex justify-between items-center pb-2 border-b border-slate-800">
         <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
@@ -466,18 +466,18 @@
           </select>
         </div>
 
-        <div id="ai-test-result" class="hidden text-[11px] p-2.5 rounded-xl"></div>
+        <div id="ai-test-result" style="display: none;" class="text-[11px] p-2.5 rounded-xl"></div>
       </div>
 
       <div class="flex gap-2 pt-1">
-        <button id="ai-test-btn" class="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 text-xs font-medium active:scale-95">연결 테스트</button>
-        <button id="ai-save-btn" class="flex-1 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold active:scale-95">저장</button>
+        <button onclick="appTestAiKey()" id="ai-test-btn" class="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 text-xs font-medium active:scale-95">연결 테스트</button>
+        <button onclick="appSaveAiSettings()" id="ai-save-btn" class="flex-1 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold active:scale-95">저장</button>
       </div>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div id="app-toast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 max-w-xs w-[90%] bg-slate-800/95 border border-slate-700 text-white px-3 py-2.5 rounded-xl shadow-2xl z-50 text-xs text-center font-medium"></div>
+  <div id="app-toast" style="display: none;" class="fixed top-4 left-1/2 -translate-x-1/2 max-w-xs w-[90%] bg-slate-800/95 border border-slate-700 text-white px-3 py-2.5 rounded-xl shadow-2xl z-50 text-xs text-center font-medium"></div>
 
 </div>
 
