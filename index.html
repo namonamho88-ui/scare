@@ -2,14 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-<title>CARE 지식 수집기 | 실시간 Gemini AI 장애이력 수집·진단 플랫폼</title>
-<meta name="description" content="금융/IT 장애 알림 SMS 및 로그를 실시간 Gemini AI로 자동 파싱·정밀 진단하고 마스터 시트에 적재하는 지능형 모바일 웹 플랫폼" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CARE 지식 수집기 | 실시간 Gemini AI 장애이력 수집 & 지능형 분석 플랫폼</title>
+<meta name="description" content="장애 알림 SMS 및 로그를 실시간 Gemini AI로 자동 파싱하고 정밀 진단하여 마스터 시트에 적재하는 지능형 웹 플랫폼" />
 
-<!-- Tailwind CSS -->
+<!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Google Fonts -->
+<!-- Google Fonts: Inter & Noto Sans KR -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Lucide Icons -->
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.min.js"></script>
@@ -17,350 +18,381 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <!-- SheetJS (Excel Export) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<!-- Marked.js (Markdown Rendering for AI Responses) -->
+<!-- Marked.js (Markdown Rendering) -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <!-- Tesseract.js (Local OCR) -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 
 <link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-blue-600 selection:text-white">
 
-<div id="app-shell" class="flex flex-col h-screen w-full max-w-md md:max-w-lg mx-auto bg-slate-900 border-x border-slate-800 font-sans overflow-hidden relative shadow-2xl">
+<div class="min-h-screen flex flex-col max-w-4xl mx-auto bg-slate-900 border-x border-slate-800 shadow-2xl">
 
-  <!-- ===================== Top Header ===================== -->
-  <header class="h-14 bg-slate-950/90 backdrop-blur border-b border-slate-800 flex items-center justify-between px-3.5 shrink-0 sticky top-0 z-30">
-    <div class="flex items-center gap-2">
-      <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-1.5 rounded-xl text-white shadow-md shadow-blue-500/20 flex items-center justify-center">
-        <i data-lucide="shield-alert" class="w-4 h-4"></i>
+  <!-- ========================================================
+       1. Top Header
+  ======================================================== -->
+  <header class="bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3.5 sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2 rounded-xl text-white shadow-lg shadow-blue-500/20 flex items-center justify-center">
+        <i data-lucide="shield-alert" class="w-5 h-5"></i>
       </div>
       <div>
-        <div class="flex items-center gap-1.5">
-          <span class="font-bold text-sm tracking-tight text-white">CARE 지식 수집기</span>
-          <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800/80">AI v2.0</span>
+        <div class="flex items-center gap-2">
+          <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-white">CARE 지식 수집기</h1>
+          <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-950 text-blue-400 border border-blue-800">AI v2.0</span>
         </div>
+        <p class="text-[11px] text-slate-400 hidden sm:block">신한카드 TMS 장애이력 실시간 Gemini AI 수집 & 지식베이스 플랫폼</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-2">
       <!-- AI Engine Status Badge (Click to open settings) -->
-      <button id="open-ai-settings-btn" title="AI 모델 설정" class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 border border-slate-700 rounded-lg text-slate-200 text-[10px] font-medium transition">
+      <button id="open-ai-settings-btn" title="Gemini AI 설정" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 active:bg-slate-600 border border-slate-700 rounded-xl text-slate-200 text-xs font-medium transition cursor-pointer shadow-sm">
         <span class="pulse-dot pulse-green" id="ai-status-indicator"></span>
-        <span id="ai-header-model-badge" class="font-mono text-[10px] text-blue-300">Gemini AI</span>
-        <i data-lucide="sparkles" class="w-3 h-3 text-yellow-400"></i>
+        <span id="ai-header-model-badge" class="font-mono text-xs text-blue-300">스마트 AI 엔진</span>
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-yellow-400"></i>
       </button>
 
-      <button id="refresh-btn" title="새로고침" class="p-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg text-slate-300 transition">
-        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+      <button id="refresh-btn" title="새로고침" class="p-2 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-xl text-slate-300 transition cursor-pointer">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
       </button>
 
-      <button id="export-btn" title="엑셀로 내보내기 (.xlsx)" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg text-white shadow-sm transition">
-        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+      <button id="export-btn" title="엑셀로 내보내기 (.xlsx)" class="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-xl text-white text-xs font-semibold shadow-sm transition cursor-pointer">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">엑셀 다운로드</span>
       </button>
     </div>
   </header>
 
-  <!-- ===================== Cumulative Progress Widget ===================== -->
-  <div class="px-4 py-2.5 bg-slate-950/70 border-b border-slate-800/80 shrink-0">
-    <div class="flex justify-between items-center mb-1">
-      <div class="flex items-center gap-1.5">
-        <i data-lucide="target" class="w-3 h-3 text-blue-400"></i>
-        <span class="text-[11px] font-bold text-slate-300">조직 장애이력 누적 목표</span>
+  <!-- ========================================================
+       2. Cumulative Progress Widget
+  ======================================================== -->
+  <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800">
+    <div class="flex justify-between items-center mb-1.5">
+      <div class="flex items-center gap-2">
+        <i data-lucide="target" class="w-4 h-4 text-blue-400"></i>
+        <span class="text-xs font-bold text-slate-300">조직 장애이력 누적 목표</span>
       </div>
-      <span class="text-[11px] text-blue-400 font-bold"><span id="progress-count">0</span> / 1,000건 (<span id="progress-pct">0%</span>)</span>
+      <span class="text-xs text-blue-400 font-bold font-mono"><span id="progress-count">0</span> / 1,000건 (<span id="progress-pct">0%</span>)</span>
     </div>
-    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-      <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div>
+    <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
+      <div id="progress-bar" class="bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 h-2 rounded-full transition-all duration-500" style="width:0%"></div>
     </div>
   </div>
 
-  <!-- ===================== Main Scrollable Content ===================== -->
-  <main id="main-content" class="flex-1 overflow-y-auto px-3.5 py-3.5 pb-24 space-y-4">
+  <!-- ========================================================
+       3. Main Tab Navigation
+  ======================================================== -->
+  <nav class="bg-slate-950 border-b border-slate-800 px-4 flex gap-2 overflow-x-auto no-scrollbar">
+    <button data-tab="collector" class="tab-nav-btn py-3 px-4 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 border-blue-500 text-blue-400 transition cursor-pointer whitespace-nowrap">
+      <i data-lucide="sparkles" class="w-4 h-4"></i>
+      <span>장애 알림 수집 & 파싱</span>
+    </button>
+    <button data-tab="master" class="tab-nav-btn py-3 px-4 text-xs sm:text-sm font-medium flex items-center gap-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer whitespace-nowrap">
+      <i data-lucide="database" class="w-4 h-4"></i>
+      <span>장애이력 마스터</span>
+    </button>
+    <button data-tab="status" class="tab-nav-btn py-3 px-4 text-xs sm:text-sm font-medium flex items-center gap-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer whitespace-nowrap">
+      <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+      <span>추진현황 & 대시보드</span>
+    </button>
+    <button data-tab="ai" class="tab-nav-btn py-3 px-4 text-xs sm:text-sm font-medium flex items-center gap-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer whitespace-nowrap">
+      <i data-lucide="bot" class="w-4 h-4 text-indigo-400"></i>
+      <span>AI 지식 어시스턴트</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================
+       4. Main Content Area
+  ======================================================== -->
+  <main id="main-content" class="flex-1 p-4 sm:p-6 space-y-6">
 
     <!-- ========================================================
-         TAB 1: COLLECTOR (SMS / Direct / Screenshot OCR)
+         TAB 1: COLLECTOR
     ======================================================== -->
-    <section id="tab-collector" class="tab-panel space-y-4">
+    <section id="tab-collector" class="tab-panel space-y-5">
 
-      <div class="bg-slate-950 border border-slate-800/90 rounded-2xl p-3.5 shadow-xl">
-        <div class="flex items-start justify-between mb-2.5 gap-2">
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2">
+            <i data-lucide="clipboard-paste" class="w-4 h-4 text-blue-400"></i>
+            <span>장애 알림 등록 & 실시간 AI 파싱</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+            SMS 알림 원문, 슬랙/메신저 공지, 에러 로그를 붙여넣거나 스크린샷을 업로드하면 Gemini AI가 20+개 정형 데이터로 자동 변환하고 원인/조치 가이드를 생성합니다.
+          </p>
+        </div>
+
+        <!-- Input mode toggle buttons -->
+        <div class="flex gap-1.5 bg-slate-900 border border-slate-800 rounded-xl p-1.5">
+          <button data-input-mode="sms" class="input-mode-btn flex-1 text-xs font-semibold py-2 rounded-lg flex items-center justify-center gap-1.5 active transition cursor-pointer">
+            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            <span>SMS / 로그 붙여넣기</span>
+          </button>
+          <button data-input-mode="manual" class="input-mode-btn flex-1 text-xs font-semibold py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="pencil-line" class="w-3.5 h-3.5"></i>
+            <span>항목 직접 입력</span>
+          </button>
+          <button data-input-mode="image" class="input-mode-btn flex-1 text-xs font-semibold py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span>스크린샷 OCR</span>
+          </button>
+        </div>
+
+        <!-- 1) SMS Paste Mode -->
+        <div id="sms-mode-block" class="space-y-3">
           <div>
-            <h2 class="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-              <i data-lucide="clipboard-paste" class="w-4 h-4 text-blue-400"></i>
-              장애 알림 지능형 수집 & 파싱
-            </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-              SMS 원문, 메신저 알림, 오류 로그를 붙여넣거나 스크린샷을 올리면 실시간 Gemini AI가 정형 데이터로 자동 변환합니다.
-            </p>
-          </div>
-        </div>
-
-        <!-- Input mode toggle -->
-        <div class="flex gap-1 mb-3 bg-slate-900 border border-slate-800 rounded-xl p-1">
-          <button data-input-mode="sms" class="input-mode-btn flex-1 text-[11px] font-medium py-1.5 rounded-lg flex items-center justify-center gap-1 transition">
-            <i data-lucide="message-square" class="w-3 h-3"></i> SMS / 로그
-          </button>
-          <button data-input-mode="manual" class="input-mode-btn flex-1 text-[11px] font-medium py-1.5 rounded-lg flex items-center justify-center gap-1 transition">
-            <i data-lucide="pencil-line" class="w-3 h-3"></i> 직접 입력
-          </button>
-          <button data-input-mode="image" class="input-mode-btn flex-1 text-[11px] font-medium py-1.5 rounded-lg flex items-center justify-center gap-1 transition">
-            <i data-lucide="camera" class="w-3 h-3"></i> 스크린샷 OCR
-          </button>
-        </div>
-
-        <!-- 1) SMS paste mode -->
-        <div id="sms-mode-block">
-          <div class="flex gap-1.5 mb-2.5 overflow-x-auto no-scrollbar">
-            <button data-sample="timeout" class="sample-btn text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 px-2.5 py-1 rounded-lg">샘플1: 임계치초과(해외할부)</button>
-            <button data-sample="agency" class="sample-btn text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 px-2.5 py-1 rounded-lg">샘플2: 대외기관(코스콤)</button>
-            <button data-sample="batch" class="sample-btn text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 px-2.5 py-1 rounded-lg">샘플3: 야간배치 정산오류</button>
-            <button data-sample="unstructured" class="sample-btn text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 text-purple-400 border border-purple-800/80 px-2.5 py-1 rounded-lg">샘플4: 비정형 슬랙 로그</button>
-          </div>
-
-          <textarea id="sms-input" placeholder="[Web발신]&#10;[신한카드] TMS 온라인 비즈니스오류 임계치 초과 알림&#10;▶ IF아이디 : [HPG00760]&#10;▶ IF명 : [[개인]해외이용 할부전환 신청]&#10;... 문자 원문, 슬랙 알림, 에러 로그를 그대로 붙여넣으세요." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 h-28 resize-none leading-relaxed font-mono"></textarea>
-          
-          <div class="flex justify-between items-center mt-1.5 px-0.5">
-            <span id="draft-indicator" class="text-[10px] text-slate-500 flex items-center gap-1"></span>
-            <button id="clear-input-btn" class="text-[10px] text-slate-500 hover:text-slate-300">내용 비우기</button>
-          </div>
-
-          <button id="parse-btn" disabled class="w-full mt-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 text-xs shadow-lg shadow-blue-600/20 transition">
-            <i data-lucide="sparkles" class="w-4 h-4 text-yellow-300"></i>
-            <span id="parse-btn-text">Gemini AI 지능형 자동 파싱 실행</span>
-          </button>
-        </div>
-
-        <!-- 2) Manual template input mode -->
-        <div id="manual-mode-block" class="hidden space-y-3">
-          <div class="flex items-start gap-1.5 text-[10px] text-slate-400 bg-slate-900/80 border border-slate-800 rounded-xl p-2.5">
-            <i data-lucide="info" class="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5"></i>
-            <span>직접 입력한 항목은 SMS 파싱과 동일하게 AI 정밀 진단 및 내부 보안 마스킹 정책이 완벽히 적용됩니다.</span>
-          </div>
-          <div id="manual-form-fields" class="space-y-2.5"></div>
-          <div class="flex justify-end">
-            <button id="manual-clear-btn" class="text-[10px] text-slate-500 hover:text-slate-300">입력값 초기화</button>
-          </div>
-          <button id="manual-parse-btn" disabled class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 text-xs transition">
-            <i data-lucide="sparkles" class="w-4 h-4"></i>
-            <span>입력값으로 AI 파싱 실행</span>
-          </button>
-        </div>
-
-        <!-- 3) Image (screenshot) OCR mode -->
-        <div id="image-mode-block" class="hidden space-y-3">
-          <div class="flex items-start gap-1.5 text-[10px] text-slate-400 bg-slate-900/80 border border-slate-800 rounded-xl p-2.5">
-            <i data-lucide="camera" class="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5"></i>
-            <span>모니터링 대시보드나 SMS 캡처 스크린샷을 올리거나 <strong>Ctrl+V</strong>로 바로 붙여넣으면 Tesseract OCR 및 Vision AI로 인식합니다.</span>
-          </div>
-
-          <label id="image-drop-zone" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl py-7 px-4 cursor-pointer transition">
-            <div class="p-3 bg-slate-900 rounded-full text-slate-400">
-              <i data-lucide="image-plus" class="w-6 h-6 text-blue-400"></i>
-            </div>
-            <span class="text-xs text-slate-300 font-medium text-center">이미지 클릭하여 업로드<br/><span class="text-[10px] text-slate-500">또는 이 화면에서 Ctrl+V 붙여넣기</span></span>
-            <input id="image-file-input" type="file" accept="image/*" class="hidden" />
-          </label>
-
-          <div id="image-preview-wrap" class="hidden">
-            <div class="relative">
-              <img id="image-preview" class="w-full rounded-xl border border-slate-800 max-h-48 object-cover" />
-              <button id="image-clear-btn" class="absolute top-2 right-2 bg-slate-950/80 hover:bg-slate-900 text-slate-300 p-1.5 rounded-lg border border-slate-700">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            <span class="text-[11px] font-bold text-slate-400 block mb-1.5">💡 빠른 테스트용 실감형 샘플 데이터:</span>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="loadSample('timeout')" class="sample-btn text-xs bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1">
+                <span>샘플1: 해외이용 할부전환 (임계치초과)</span>
+              </button>
+              <button onclick="loadSample('agency')" class="sample-btn text-xs bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1">
+                <span>샘플2: 법인 실명인증 (코스콤 연계오류)</span>
+              </button>
+              <button onclick="loadSample('batch')" class="sample-btn text-xs bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/80 px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1">
+                <span>샘플3: 야간정산 배치오류</span>
+              </button>
+              <button onclick="loadSample('unstructured')" class="sample-btn text-xs bg-slate-900 hover:bg-slate-800 text-purple-400 border border-purple-800/80 px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1">
+                <span>샘플4: 카카오페이 비정형 슬랙 로그</span>
               </button>
             </div>
           </div>
 
-          <div id="ocr-progress" class="hidden">
-            <div class="flex justify-between items-center mb-1">
-              <span class="text-[10px] text-slate-400" id="ocr-progress-label">텍스트 인식 중...</span>
-              <span class="text-[10px] text-blue-400 font-mono" id="ocr-progress-pct">0%</span>
-            </div>
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div id="ocr-progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width:0%"></div>
+          <div class="space-y-1.5">
+            <textarea id="sms-input" placeholder="[Web발신]&#10;[신한카드] TMS 온라인 비즈니스오류 임계치 초과 알림&#10;▶ IF아이디 : [HPG00760]&#10;▶ IF명 : [[개인]해외이용 할부전환 신청]&#10;... 문자 원문, 슬랙 알림, 에러 로그를 그대로 붙여넣으세요." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 h-36 resize-y leading-relaxed font-mono"></textarea>
+            
+            <div class="flex justify-between items-center px-1">
+              <span id="draft-indicator" class="text-[11px] text-slate-500 flex items-center gap-1"></span>
+              <button id="clear-input-btn" class="text-xs text-slate-400 hover:text-slate-200 cursor-pointer">내용 비우기</button>
             </div>
           </div>
 
-          <div id="ocr-result-wrap" class="hidden space-y-1">
-            <label class="block text-[11px] font-bold text-slate-300">인식된 텍스트</label>
-            <textarea id="ocr-result-text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none font-mono"></textarea>
+          <button id="parse-btn" disabled class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm shadow-xl shadow-blue-600/20 transition cursor-pointer">
+            <i data-lucide="sparkles" class="w-4 h-4 text-yellow-300"></i>
+            <span id="parse-btn-text">Gemini AI 지능형 자동 파싱 & 진단 실행</span>
+          </button>
+        </div>
+
+        <!-- 2) Manual Form Input Mode -->
+        <div id="manual-mode-block" class="hidden space-y-4">
+          <div class="flex items-start gap-2 text-xs text-slate-400 bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+            <span>직접 입력한 항목은 SMS 파싱과 동일하게 AI 정밀 진단 및 내부 보안 마스킹 정책이 완벽히 적용됩니다.</span>
+          </div>
+          <div id="manual-form-fields" class="space-y-3"></div>
+          <div class="flex justify-end">
+            <button id="manual-clear-btn" class="text-xs text-slate-400 hover:text-slate-200 cursor-pointer">입력값 초기화</button>
+          </div>
+          <button id="manual-parse-btn" disabled class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition cursor-pointer">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>입력값으로 AI 파싱 & 진단 실행</span>
+          </button>
+        </div>
+
+        <!-- 3) Image Screenshot OCR Mode -->
+        <div id="image-mode-block" class="hidden space-y-4">
+          <div class="flex items-start gap-2 text-xs text-slate-400 bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <i data-lucide="camera" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+            <span>모니터링 대시보드나 SMS 캡처 스크린샷을 올리거나 <strong>Ctrl+V</strong>로 바로 붙여넣으면 OCR 및 Vision AI로 인식합니다.</span>
           </div>
 
-          <button id="image-parse-btn" disabled class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 text-xs transition">
+          <label id="image-drop-zone" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl py-8 px-4 cursor-pointer transition">
+            <div class="p-3 bg-slate-900 rounded-full text-blue-400">
+              <i data-lucide="image-plus" class="w-6 h-6"></i>
+            </div>
+            <span class="text-xs text-slate-300 font-medium text-center">이미지 클릭하여 업로드<br/><span class="text-[11px] text-slate-500">또는 이 화면에서 Ctrl+V 붙여넣기</span></span>
+            <input id="image-file-input" type="file" accept="image/*" class="hidden" />
+          </label>
+
+          <div id="image-preview-wrap" class="hidden relative">
+            <img id="image-preview" class="w-full rounded-xl border border-slate-800 max-h-56 object-cover" />
+            <button id="image-clear-btn" class="absolute top-2 right-2 bg-slate-950/80 hover:bg-slate-900 text-slate-300 p-1.5 rounded-lg border border-slate-700 cursor-pointer">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div id="ocr-progress" class="hidden space-y-1">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-400" id="ocr-progress-label">텍스트 인식 중...</span>
+              <span class="text-xs text-blue-400 font-mono" id="ocr-progress-pct">0%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div id="ocr-progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div id="ocr-result-wrap" class="hidden space-y-1.5">
+            <label class="block text-xs font-bold text-slate-300">인식된 텍스트 (필요 시 수정 후 파싱)</label>
+            <textarea id="ocr-result-text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 h-28 resize-none font-mono"></textarea>
+          </div>
+
+          <button id="image-parse-btn" disabled class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition cursor-pointer">
             <i data-lucide="sparkles" class="w-4 h-4 text-yellow-300"></i>
             <span>인식된 텍스트로 AI 파싱 실행</span>
           </button>
         </div>
       </div>
 
-      <!-- Duplicate warning banner -->
-      <div id="dup-warning" class="hidden bg-amber-950/40 border border-amber-800/80 rounded-2xl p-3 flex items-start gap-2.5">
-        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
-        <div class="text-[11px] text-amber-300 leading-relaxed" id="dup-warning-text"></div>
+      <!-- Duplicate Warning Banner -->
+      <div id="dup-warning" class="hidden bg-amber-950/40 border border-amber-800/80 rounded-2xl p-4 flex items-start gap-3">
+        <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+        <div class="text-xs text-amber-300 leading-relaxed" id="dup-warning-text"></div>
       </div>
 
-      <!-- Similar past incidents (RAG semantic matching) -->
-      <div id="similar-panel" class="hidden bg-violet-950/30 border border-violet-800/60 rounded-2xl p-3.5 space-y-2.5">
+      <!-- Similar Past Incidents (Semantic Vector RAG) -->
+      <div id="similar-panel" class="hidden bg-violet-950/30 border border-violet-800/60 rounded-2xl p-4 sm:p-5 space-y-3">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5 text-[11px] font-bold text-violet-300 uppercase">
-            <i data-lucide="git-merge" class="w-3.5 h-3.5 text-violet-400"></i>
+          <div class="flex items-center gap-2 text-xs font-bold text-violet-300 uppercase">
+            <i data-lucide="git-merge" class="w-4 h-4 text-violet-400"></i>
             <span>과거 유사 장애 사례 (RAG 벡터 검색)</span>
           </div>
-          <span class="text-[10px] text-violet-400/80 font-mono">Top Matches</span>
+          <span class="text-[10px] text-violet-400 font-mono bg-violet-900/50 px-2 py-0.5 rounded border border-violet-700">Cosine Similarity Ranked</span>
         </div>
-        <div id="similar-list" class="space-y-2"></div>
+        <div id="similar-list" class="space-y-2.5"></div>
       </div>
 
-      <!-- Parsed Preview & AI Editor Card -->
-      <div id="parsed-card" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-2xl space-y-4">
+      <!-- Parsed Preview & AI Deep Diagnosis Card -->
+      <div id="parsed-card" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-5">
         
-        <!-- Header status -->
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div class="flex items-center gap-2.5">
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-3">
             <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/30">
               <i data-lucide="check-circle-2" class="w-5 h-5"></i>
             </div>
             <div>
-              <div class="flex items-center gap-1.5">
-                <h3 class="text-sm font-bold text-slate-100">파싱 및 데이터 추출 완료</h3>
-                <span id="ai-severity-badge" class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-red-950 text-red-400 border border-red-800">CRITICAL</span>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-100">파싱 및 데이터 추출 완료</h3>
+                <span id="ai-severity-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-950 text-red-400 border border-red-800">CRITICAL</span>
               </div>
-              <p class="text-[10px] font-mono text-slate-400 mt-0.5" id="parsed-id"></p>
+              <p class="text-xs font-mono text-slate-400 mt-0.5" id="parsed-id"></p>
             </div>
           </div>
         </div>
 
-        <!-- Basic parsed fields grid -->
-        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-          <span class="text-[10px] text-slate-400 block mb-0.5">알림 제목</span>
-          <strong class="text-xs text-slate-100" id="p-alerttitle"></strong>
-        </div>
-
-        <div class="space-y-2">
-          <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-            <span class="text-[10px] text-slate-400 block mb-0.5">IF아이디 / IF명칭</span>
-            <strong class="text-xs text-slate-100 font-mono block" id="p-ifid-name"></strong>
+        <!-- Grid of extracted fields -->
+        <div class="space-y-2.5">
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-400 block mb-0.5">알림 제목</span>
+            <strong class="text-xs sm:text-sm text-slate-100" id="p-alerttitle"></strong>
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 block mb-0.5">IF아이디 / IF명칭</span>
+              <strong class="text-xs text-slate-100 font-mono block" id="p-ifid-name"></strong>
+            </div>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
               <span class="text-[10px] text-slate-400 block mb-0.5">서비스코드 / 대외기관</span>
               <strong class="text-xs text-slate-200 font-mono block truncate" id="p-svc-agency"></strong>
             </div>
-            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-              <span class="text-[10px] text-slate-400 block mb-0.5">오류율 / 임계치</span>
-              <strong class="text-xs text-red-400 font-mono block" id="p-errorrate"></strong>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 block mb-0.5">현재오류율 / 임계치</span>
+              <strong class="text-xs text-red-400 font-mono block font-bold" id="p-errorrate"></strong>
             </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-              <span class="text-[10px] text-slate-400 block mb-0.5">현재거래/오류건수</span>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 block mb-0.5">거래/오류건수 & 거래시간</span>
               <strong class="text-xs text-slate-200 font-mono block" id="p-counts"></strong>
             </div>
-            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-              <span class="text-[10px] text-slate-400 block mb-0.5">거래시간</span>
-              <strong class="text-xs text-slate-200 font-mono truncate block" id="p-tradetime"></strong>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
               <span class="text-[10px] text-slate-400 block mb-0.5">내부관리에러코드</span>
-              <strong class="text-xs text-yellow-400 font-mono block truncate" id="p-errorcode"></strong>
+              <strong class="text-xs text-yellow-400 font-mono block" id="p-errorcode"></strong>
             </div>
-            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-              <span class="text-[10px] text-slate-400 block mb-0.5 flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i>수신자 (마스킹됨)</span>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 block mb-0.5 flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3 text-slate-500"></i>수신자 (보안 마스킹됨)</span>
               <strong class="text-xs text-slate-300 font-mono block truncate" id="p-recipients"></strong>
             </div>
           </div>
         </div>
 
-        <!-- ================= AI Deep Diagnosis Box ================= -->
-        <div class="space-y-3 bg-gradient-to-b from-blue-950/40 to-slate-950 border border-blue-900/60 p-3.5 rounded-2xl shadow-inner">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 uppercase">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-yellow-300"></i>
-              <span>Gemini AI 심층 진단 & 해결 가이드</span>
+        <!-- AI Deep Diagnosis Box -->
+        <div class="space-y-3.5 bg-gradient-to-b from-blue-950/40 to-slate-950 border border-blue-900/60 p-4 rounded-2xl shadow-inner">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-xs font-bold text-blue-400 uppercase">
+              <i data-lucide="sparkles" class="w-4 h-4 text-yellow-300"></i>
+              <span>Gemini AI 심층 진단 & 표준 조치 가이드</span>
             </div>
-            <button id="ai-diagnose-btn" class="px-2.5 py-1 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white rounded-lg font-medium flex items-center gap-1 text-[10px] shadow transition">
-              <i data-lucide="brain-circuit" class="w-3 h-3"></i>
-              <span id="ai-diagnose-btn-text">AI 재진단 실행</span>
+            <button id="ai-diagnose-btn" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white rounded-xl font-medium flex items-center gap-1.5 text-xs shadow transition cursor-pointer">
+              <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i>
+              <span>AI 재진단 실행</span>
             </button>
           </div>
 
-          <div id="ai-draft-basis" class="hidden text-[10px] text-blue-300 bg-blue-900/30 border border-blue-800/40 rounded-xl px-3 py-2 leading-relaxed"></div>
+          <div id="ai-draft-basis" class="hidden text-xs text-blue-300 bg-blue-900/30 border border-blue-800/40 rounded-xl p-3 leading-relaxed"></div>
 
-          <!-- Cause Candidates (Clickable to select) -->
-          <div id="ai-cause-candidates" class="hidden space-y-1.5"></div>
+          <!-- Cause Candidates list -->
+          <div id="ai-cause-candidates" class="hidden space-y-2"></div>
 
           <!-- Root Cause with Proofreader -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-[11px] font-bold text-slate-300">장애원인(근본)</label>
-              <button data-proof-target="p-rootcause" class="ai-proof-btn text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5 transition">
-                <i data-lucide="wand-2" class="w-3 h-3"></i> AI 문구 교정
+              <label class="block text-xs font-bold text-slate-300">장애원인(근본)</label>
+              <button onclick="proofreadField('p-rootcause')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition cursor-pointer">
+                <i data-lucide="wand-2" class="w-3.5 h-3.5"></i> AI 문구 교정
               </button>
             </div>
-            <textarea id="p-rootcause" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-relaxed"></textarea>
+            <textarea id="p-rootcause" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y leading-relaxed"></textarea>
           </div>
 
           <!-- Action Details with Proofreader -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-[11px] font-bold text-slate-300">조치내용 (단계별 가이드)</label>
-              <button data-proof-target="p-action" class="ai-proof-btn text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5 transition">
-                <i data-lucide="wand-2" class="w-3 h-3"></i> AI 문구 교정
+              <label class="block text-xs font-bold text-slate-300">조치내용 (단계별 가이드)</label>
+              <button onclick="proofreadField('p-action')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition cursor-pointer">
+                <i data-lucide="wand-2" class="w-3.5 h-3.5"></i> AI 문구 교정
               </button>
             </div>
-            <textarea id="p-action" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-relaxed"></textarea>
+            <textarea id="p-action" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y leading-relaxed"></textarea>
           </div>
 
           <!-- Prevention with Proofreader -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-[11px] font-bold text-slate-300">재발방지책</label>
-              <button data-proof-target="p-prevention" class="ai-proof-btn text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5 transition">
-                <i data-lucide="wand-2" class="w-3 h-3"></i> AI 문구 교정
+              <label class="block text-xs font-bold text-slate-300">재발방지책</label>
+              <button onclick="proofreadField('p-prevention')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition cursor-pointer">
+                <i data-lucide="wand-2" class="w-3.5 h-3.5"></i> AI 문구 교정
               </button>
             </div>
-            <textarea id="p-prevention" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-relaxed"></textarea>
+            <textarea id="p-prevention" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y leading-relaxed"></textarea>
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-bold text-slate-300 mb-1">담당부서</label>
-              <input id="p-dept" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label class="block text-xs font-bold text-slate-300 mb-1">담당부서</label>
+              <input id="p-dept" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label class="block text-[11px] font-bold text-slate-300 mb-1 flex items-center gap-1">
+              <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1">
                 <span>담당자</span>
-                <i data-lucide="shield-check" class="w-3 h-3 text-emerald-400"></i>
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
               </label>
-              <input id="p-assignee" type="text" placeholder="입력 시 자동 마스킹" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input id="p-assignee" type="text" placeholder="입력 시 자동 마스킹" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
 
-          <div class="flex items-start gap-1.5 text-[10px] text-slate-500 pt-1">
-            <i data-lucide="shield" class="w-3 h-3 shrink-0 mt-0.5 text-slate-400"></i>
+          <div class="flex items-start gap-2 text-xs text-slate-500 pt-1">
+            <i data-lucide="shield" class="w-4 h-4 shrink-0 mt-0.5 text-slate-400"></i>
             <span>보안 정책에 따라 업무코드/서비스코드/수신자/담당자는 항상 자동 마스킹 처리되어 안전하게 저장됩니다.</span>
           </div>
         </div>
 
-        <!-- Card bottom action buttons -->
-        <div class="flex gap-2 pt-1">
-          <button id="cancel-parsed-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 transition">
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-2 pt-2">
+          <button id="cancel-parsed-btn" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-700 text-xs font-bold rounded-xl text-slate-300 transition cursor-pointer">
             취소
           </button>
-          <button id="copy-parsed-btn" title="요약 복사" class="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 transition">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <button id="copy-parsed-btn" title="요약 복사" class="py-3 px-4 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-700 text-xs font-bold rounded-xl text-slate-300 transition cursor-pointer">
+            <i data-lucide="copy" class="w-4 h-4"></i>
           </button>
-          <button id="copy-messenger-btn" title="팀 메신저 공유용 텍스트 복사" class="py-2.5 px-3 bg-yellow-950/60 hover:bg-yellow-900/80 active:bg-yellow-900 border border-yellow-800/80 text-xs font-medium rounded-xl text-yellow-400 transition">
-            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+          <button id="copy-messenger-btn" title="팀 메신저(Slack/카카오톡) 공유용 텍스트 복사" class="py-3 px-4 bg-yellow-950/60 hover:bg-yellow-900 active:bg-yellow-900 border border-yellow-800 text-xs font-bold rounded-xl text-yellow-400 transition cursor-pointer flex items-center gap-1.5">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">메신저 공유</span>
           </button>
-          <button id="register-btn" class="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-semibold rounded-xl text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition">
+          <button id="register-btn" class="flex-[2] py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-xs sm:text-sm font-bold rounded-xl text-white flex items-center justify-center gap-2 shadow-xl shadow-blue-600/30 transition cursor-pointer">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            마스터에 적재
+            <span>마스터 시트에 적재</span>
           </button>
         </div>
       </div>
@@ -369,35 +401,36 @@
     <!-- ========================================================
          TAB 2: MASTER LIST
     ======================================================== -->
-    <section id="tab-master" class="tab-panel hidden space-y-3">
-      <div class="flex justify-between items-center">
+    <section id="tab-master" class="tab-panel hidden space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-2">
         <div>
-          <h2 class="text-sm font-bold text-slate-100">장애이력 마스터 DB</h2>
-          <p class="text-[10px] text-slate-400">적재된 전체 장애이력 및 표준 지식베이스</p>
+          <h2 class="text-sm sm:text-base font-bold text-slate-100">장애이력 마스터 데이터베이스</h2>
+          <p class="text-xs text-slate-400">적재된 전체 장애이력 및 표준 지식베이스</p>
         </div>
-        <span class="text-[11px] bg-emerald-950 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-800 font-mono font-bold">
+        <span class="text-xs bg-emerald-950 text-emerald-400 px-3 py-1 rounded-full border border-emerald-800 font-mono font-bold">
           총 <span id="master-total">0</span>건
         </span>
       </div>
 
-      <!-- Search & Filter bar -->
-      <div class="flex gap-1.5">
+      <!-- Search & Filters -->
+      <div class="flex gap-2">
         <div class="relative flex-1">
-          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
-          <input id="search-input" type="text" placeholder="IF아이디, 에러코드, 제목, 담당자 검색..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input id="search-input" type="text" placeholder="IF아이디, 에러코드, 제목, 담당자, 대외기관 검색..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
-        <button id="toggle-filter-btn" title="상세 필터" class="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-slate-300 relative transition">
+        <button id="toggle-filter-btn" title="상세 필터" class="px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-slate-300 relative transition cursor-pointer flex items-center gap-1.5">
           <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          <span class="text-xs hidden sm:inline font-medium">필터</span>
           <span id="filter-active-dot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full ring-2 ring-slate-900"></span>
         </button>
       </div>
 
-      <!-- Advanced filter drawer -->
-      <div id="filter-panel" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
-        <div class="grid grid-cols-2 gap-2">
+      <!-- Filter Drawer -->
+      <div id="filter-panel" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label class="block text-[10px] text-slate-400 mb-1">상태</label>
-            <select id="status-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100">
+            <label class="block text-xs text-slate-400 mb-1">상태</label>
+            <select id="status-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-100">
               <option value="">전체 상태</option>
               <option value="등록대기">등록대기</option>
               <option value="검증중">검증중</option>
@@ -405,41 +438,40 @@
             </select>
           </div>
           <div>
-            <label class="block text-[10px] text-slate-400 mb-1">담당부서</label>
-            <select id="dept-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100">
+            <label class="block text-xs text-slate-400 mb-1">담당부서</label>
+            <select id="dept-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-100">
               <option value="">전체 부서</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] text-slate-400 mb-1">업무코드</label>
-            <select id="bizcode-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100">
+            <label class="block text-xs text-slate-400 mb-1">업무코드</label>
+            <select id="bizcode-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-100">
               <option value="">전체 업무코드</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] text-slate-400 mb-1">대외기관</label>
-            <select id="agency-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100">
+            <label class="block text-xs text-slate-400 mb-1">대외기관</label>
+            <select id="agency-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-100">
               <option value="">전체 기관</option>
             </select>
           </div>
-          <div class="col-span-2">
-            <label class="block text-[10px] text-slate-400 mb-1">IF아이디</label>
-            <input id="ifid-filter" type="text" placeholder="예: HPG00760" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500" />
-          </div>
         </div>
-        <button id="filter-reset-btn" class="w-full text-[11px] text-slate-400 hover:text-slate-200 py-1.5 border border-slate-800 hover:bg-slate-900 rounded-lg transition">필터 조건 초기화</button>
+        <div class="flex justify-between items-center pt-1 border-t border-slate-800">
+          <input id="ifid-filter" type="text" placeholder="IF아이디 필터 (예: HPG00760)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 w-60" />
+          <button id="filter-reset-btn" class="text-xs text-slate-400 hover:text-slate-200 cursor-pointer">필터 조건 초기화</button>
+        </div>
       </div>
 
       <!-- Master List Container -->
       <div id="master-list" class="space-y-3"></div>
 
-      <!-- Empty / Loading state -->
+      <!-- Empty / Loading States -->
       <div id="master-empty" class="hidden text-center py-16 text-slate-500 text-xs">
         <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
         조건에 일치하는 장애이력이 없습니다.
       </div>
       <div id="master-loading" class="text-center py-16 text-slate-500 text-xs">
-        <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin opacity-60"></i>
+        <i data-lucide="loader-2" class="w-6 h-6 mx-auto mb-2 animate-spin opacity-60"></i>
         데이터를 불러오는 중...
       </div>
     </section>
@@ -447,139 +479,137 @@
     <!-- ========================================================
          TAB 3: STATUS / DASHBOARD
     ======================================================== -->
-    <section id="tab-status" class="tab-panel hidden space-y-3.5">
+    <section id="tab-status" class="tab-panel hidden space-y-5">
       <div>
-        <h2 class="text-sm font-bold text-slate-100">추진현황 & 지능형 분석 대시보드</h2>
-        <p class="text-[11px] text-slate-400">지식 구축 통계 및 시스템 건전성 지표</p>
+        <h2 class="text-sm sm:text-base font-bold text-slate-100">추진현황 & 지능형 분석 대시보드</h2>
+        <p class="text-xs text-slate-400">지식 구축 통계 및 시스템 건전성 지표</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-2.5">
-        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 shadow-sm">
-          <div class="text-[10px] text-slate-400 mb-1">데이터 수집 목표</div>
-          <div class="text-xl font-extrabold text-slate-100">1,000건</div>
-          <div class="text-[10px] text-blue-400 mt-0.5">누적 <span id="dash-total" class="font-bold">0</span>건 등록</div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs text-slate-400 mb-1">데이터 수집 목표</div>
+          <div class="text-xl sm:text-2xl font-extrabold text-slate-100">1,000건</div>
+          <div class="text-xs text-blue-400 mt-0.5">누적 <span id="dash-total" class="font-bold">0</span>건 등록</div>
         </div>
-        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 shadow-sm">
-          <div class="text-[10px] text-slate-400 mb-1">검증완료율</div>
-          <div class="text-xl font-extrabold text-emerald-400"><span id="dash-verify-rate">0</span>%</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">현업 표준화 검증 기준</div>
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs text-slate-400 mb-1">검증완료율</div>
+          <div class="text-xl sm:text-2xl font-extrabold text-emerald-400"><span id="dash-verify-rate">0</span>%</div>
+          <div class="text-xs text-slate-400 mt-0.5">현업 표준화 검증 기준</div>
+        </div>
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs text-slate-400 mb-1">LLM 파이프라인</div>
+          <div class="text-xl sm:text-2xl font-extrabold text-indigo-400">RAG 준비</div>
+          <div class="text-xs text-slate-400 mt-0.5">실시간 임베딩 연동</div>
+        </div>
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="text-xs text-slate-400 mb-1">초동 조치 단축</div>
+          <div class="text-xl sm:text-2xl font-extrabold text-yellow-400">92.4%</div>
+          <div class="text-xs text-slate-400 mt-0.5">평균 45분 → 3분</div>
         </div>
       </div>
 
-      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 shadow-sm">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-[11px] font-bold text-slate-300">상태별 분포</span>
-          <span class="text-[10px] text-slate-500 font-mono">Status Ratio</span>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-slate-300">상태별 분포</span>
+            <span class="text-[10px] text-slate-500 font-mono">Status Ratio</span>
+          </div>
+          <div style="height:200px;"><canvas id="status-chart"></canvas></div>
         </div>
-        <div style="height:170px;"><canvas id="status-chart"></canvas></div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-slate-300">부서별 등록 건수</span>
+            <span class="text-[10px] text-slate-500 font-mono">By Dept</span>
+          </div>
+          <div style="height:200px;"><canvas id="dept-chart"></canvas></div>
+        </div>
       </div>
 
-      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 shadow-sm">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-[11px] font-bold text-slate-300">부서별 등록 건수</span>
-          <span class="text-[10px] text-slate-500 font-mono">By Dept</span>
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs font-bold text-slate-300">월별 등록 추이</span>
+          <span class="text-[10px] text-slate-500 font-mono">Monthly Trend</span>
         </div>
-        <div style="height:170px;"><canvas id="dept-chart"></canvas></div>
-      </div>
-
-      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 shadow-sm">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-[11px] font-bold text-slate-300">월별 등록 추이</span>
-          <span class="text-[10px] text-slate-500 font-mono">Trend</span>
-        </div>
-        <div style="height:170px;"><canvas id="trend-chart"></canvas></div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2.5">
-        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5">
-          <div class="text-[10px] text-slate-400 mb-1">LLM 학습 파이프라인</div>
-          <div class="text-base font-bold text-emerald-400">RAG 준비 완료</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">실시간 벡터 임베딩 연동</div>
-        </div>
-        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5">
-          <div class="text-[10px] text-slate-400 mb-1">장애 초동 조치 단축</div>
-          <div class="text-base font-bold text-yellow-400">92.4% 단축</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">평균 45분 → 3분 이내</div>
-        </div>
+        <div style="height:200px;"><canvas id="trend-chart"></canvas></div>
       </div>
     </section>
 
     <!-- ========================================================
-         TAB 4: AI HUB (Conversational QA Chat & Executive Report)
+         TAB 4: AI HUB (Conversational QA & Executive Report)
     ======================================================== -->
-    <section id="tab-ai" class="tab-panel hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-            <i data-lucide="bot" class="w-4 h-4 text-blue-400"></i>
-            <span>Gemini AI 지식 어시스턴트</span>
-          </h2>
-          <p class="text-[11px] text-slate-400">마스터 데이터베이스 RAG 연동 지능형 질의응답 & 리포트</p>
-        </div>
-        <button id="ai-quick-settings-btn" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] flex items-center gap-1 border border-slate-700">
-          <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
-        </button>
+    <section id="tab-ai" class="tab-panel hidden space-y-5">
+      <div>
+        <h2 class="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="bot" class="w-5 h-5 text-blue-400"></i>
+          <span>Gemini AI 지식 어시스턴트 & Executive 리포트</span>
+        </h2>
+        <p class="text-xs text-slate-400">마스터 데이터베이스 실시간 RAG 연동 지능형 질의응답 및 고위험 분석 리포트</p>
       </div>
 
-      <!-- 1) AI Conversational Knowledge QA -->
-      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+      <!-- 1) Conversational Knowledge QA -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 uppercase">
-            <i data-lucide="message-square-code" class="w-3.5 h-3.5"></i>
+          <div class="flex items-center gap-2 text-xs font-bold text-blue-400 uppercase">
+            <i data-lucide="message-square-code" class="w-4 h-4"></i>
             <span>AI 자연어 지식 검색 (RAG QA)</span>
           </div>
-          <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono">Live RAG</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono">Live RAG</span>
         </div>
 
-        <div class="flex gap-1.5">
-          <input id="ai-search-input" type="text" placeholder="예: 코스콤 연계 오류 해결법이나 야간배치 장애 원인 알려줘" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <button id="ai-search-btn" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white px-3.5 rounded-xl flex items-center justify-center shadow transition">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+        <div class="flex gap-2">
+          <input id="ai-search-input" type="text" placeholder="예: 코스콤 연계 오류 해결법이나 야간배치 장애 원인 알려줘" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <button id="ai-search-btn" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white px-4 rounded-xl flex items-center justify-center shadow transition cursor-pointer">
+            <i data-lucide="send" class="w-4 h-4"></i>
           </button>
         </div>
 
-        <!-- Sample question chips -->
-        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-          <button class="ai-sample-q text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-2.5 py-1 rounded-lg" data-q="코스콤 관련 장애 원인과 조치방법 알려줘">코스콤 장애 해결법</button>
-          <button class="ai-sample-q text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-2.5 py-1 rounded-lg" data-q="해외이용 할부전환 오류 대처 가이드 요약해줘">해외할부 대처 가이드</button>
-          <button class="ai-sample-q text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-2.5 py-1 rounded-lg" data-q="야간배치 정산 오류 재발방지책 정리해줘">야간배치 재발방지책</button>
-          <button class="ai-sample-q text-[10px] whitespace-nowrap bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-2.5 py-1 rounded-lg" data-q="검증완료된 대외기관 장애 목록 알려줘">검증완료 이력</button>
+        <!-- Sample Questions -->
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button onclick="askAiSample('코스콤 관련 장애 원인과 조치방법 알려줘')" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-3 py-1.5 rounded-lg transition cursor-pointer">
+            코스콤 장애 해결법
+          </button>
+          <button onclick="askAiSample('해외이용 할부전환 오류 대처 가이드 요약해줘')" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-3 py-1.5 rounded-lg transition cursor-pointer">
+            해외할부 대처 가이드
+          </button>
+          <button onclick="askAiSample('야간배치 정산 오류 재발방지책 정리해줘')" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-3 py-1.5 rounded-lg transition cursor-pointer">
+            야간배치 재발방지책
+          </button>
+          <button onclick="askAiSample('검증완료된 대외기관 장애 목록 알려줘')" class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 text-blue-400 px-3 py-1.5 rounded-lg transition cursor-pointer">
+            검증완료 이력
+          </button>
         </div>
 
-        <!-- QA Result container -->
-        <div id="ai-search-result" class="hidden bg-slate-900/90 border border-blue-900/40 rounded-xl p-3.5 text-xs text-slate-200 leading-relaxed space-y-2.5 shadow-inner">
-          <!-- Rendered by JS / Marked.js -->
-        </div>
+        <!-- QA Output -->
+        <div id="ai-search-result" class="hidden bg-slate-900/90 border border-blue-900/40 rounded-xl p-4 text-xs text-slate-200 leading-relaxed space-y-3 shadow-inner"></div>
       </div>
 
-      <!-- 2) AI Executive Insight Report -->
-      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 uppercase">
-            <i data-lucide="file-bar-chart-2" class="w-3.5 h-3.5"></i>
+      <!-- 2) Executive Report -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase">
+            <i data-lucide="file-bar-chart-2" class="w-4 h-4"></i>
             <span>AI Executive 종합 인사이트 리포트</span>
           </div>
-          <button id="ai-report-btn" class="text-[10px] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow font-medium transition">
-            <i data-lucide="sparkles" class="w-3 h-3"></i>
-            <span>리포트 생성</span>
+          <button id="ai-report-btn" class="text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 text-white px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow font-semibold transition cursor-pointer">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>리포트 실시간 생성</span>
           </button>
         </div>
 
-        <div id="ai-report-empty" class="text-[11px] text-slate-500 text-center py-7 bg-slate-900/50 rounded-xl border border-slate-800/60">
-          <i data-lucide="file-text" class="w-6 h-6 mx-auto mb-1.5 opacity-40"></i>
+        <div id="ai-report-empty" class="text-xs text-slate-500 text-center py-10 bg-slate-900/50 rounded-xl border border-slate-800/60">
+          <i data-lucide="file-text" class="w-7 h-7 mx-auto mb-2 opacity-40"></i>
           상단 버튼을 눌러 Executive 종합 분석 리포트를 실시간 생성하세요.
         </div>
 
-        <div id="ai-report-result" class="hidden bg-slate-900/90 border border-emerald-900/40 rounded-xl p-3.5 text-xs text-slate-200 leading-relaxed space-y-3 shadow-inner">
-          <!-- Rendered by JS / Marked.js -->
-        </div>
+        <div id="ai-report-result" class="hidden bg-slate-900/90 border border-emerald-900/40 rounded-xl p-4 text-xs text-slate-200 leading-relaxed space-y-3 shadow-inner"></div>
 
         <div id="ai-report-actions" class="hidden flex gap-2 pt-1">
-          <button id="ai-report-copy-btn" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 flex items-center justify-center gap-1.5 transition">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i> 리포트 복사
+          <button id="ai-report-copy-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="copy" class="w-4 h-4"></i> 리포트 복사
           </button>
-          <button id="ai-report-print-btn" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 flex items-center justify-center gap-1.5 transition">
-            <i data-lucide="printer" class="w-3.5 h-3.5"></i> 인쇄 / PDF
+          <button id="ai-report-print-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="printer" class="w-4 h-4"></i> 인쇄 / PDF 저장
           </button>
         </div>
       </div>
@@ -587,91 +617,67 @@
 
   </main>
 
-  <!-- ===================== Bottom Navigation Bar ===================== -->
-  <nav class="absolute bottom-0 left-0 right-0 h-16 bg-slate-950/95 backdrop-blur border-t border-slate-800 flex items-center justify-around z-30">
-    <button data-tab="collector" class="tab-btn flex flex-col items-center justify-center gap-1 flex-1 h-full transition active">
-      <i data-lucide="sparkles" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">SMS입력</span>
-    </button>
-    <button data-tab="master" class="tab-btn flex flex-col items-center justify-center gap-1 flex-1 h-full transition">
-      <i data-lucide="database" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">마스터</span>
-    </button>
-    <button data-tab="status" class="tab-btn flex flex-col items-center justify-center gap-1 flex-1 h-full transition">
-      <i data-lucide="layers" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">현황</span>
-    </button>
-    <button data-tab="ai" class="tab-btn flex flex-col items-center justify-center gap-1 flex-1 h-full transition">
-      <i data-lucide="bot" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">AI어시스턴트</span>
-    </button>
-  </nav>
-
   <!-- ========================================================
-       MODAL 1: AI Settings & Gemini Key Configuration
+       MODAL 1: AI Settings & Gemini API Key
   ======================================================== -->
-  <div id="ai-settings-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 modal-overlay">
-    <div class="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-sm p-4.5 space-y-4 shadow-2xl modal-sheet">
+  <div id="ai-settings-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4 shadow-2xl modal-sheet">
       <div class="flex justify-between items-center pb-2 border-b border-slate-800">
         <div class="flex items-center gap-2">
-          <div class="bg-blue-600/20 p-1.5 rounded-lg text-blue-400 border border-blue-500/30">
-            <i data-lucide="cpu" class="w-4 h-4"></i>
+          <div class="bg-blue-600/20 p-2 rounded-xl text-blue-400 border border-blue-500/30">
+            <i data-lucide="cpu" class="w-5 h-5"></i>
           </div>
           <div>
             <h3 class="text-sm font-bold text-white">Gemini AI 연동 설정</h3>
-            <p class="text-[10px] text-slate-400">실제 Google Gemini API 키 및 모델 선택</p>
+            <p class="text-[11px] text-slate-400">Google Gemini API 키 설정 및 모델 선택</p>
           </div>
         </div>
-        <button id="close-ai-settings-btn" class="p-1 bg-slate-900 hover:bg-slate-800 rounded-lg text-slate-400">
+        <button id="close-ai-settings-btn" class="p-1.5 bg-slate-900 hover:bg-slate-800 rounded-lg text-slate-400 cursor-pointer">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <div class="space-y-3">
-        <!-- Gemini API Key Input -->
+      <div class="space-y-3.5">
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1 flex justify-between">
+          <label class="block text-xs font-bold text-slate-300 mb-1 flex justify-between">
             <span>Google Gemini API Key</span>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-blue-400 hover:underline flex items-center gap-0.5">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-blue-400 hover:underline flex items-center gap-0.5">
               <span>무료 키 발급받기</span>
-              <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
             </a>
           </label>
           <div class="relative">
-            <input id="gemini-api-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 pr-9 text-xs text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <button id="toggle-key-visibility-btn" type="button" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
-              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            <input id="gemini-api-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 pr-10 text-xs text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <button id="toggle-key-visibility-btn" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer">
+              <i data-lucide="eye" class="w-4 h-4"></i>
             </button>
           </div>
-          <p class="text-[9px] text-slate-500 mt-1">※ 키는 브라우저 로컬 저장소(localStorage)에만 안전하게 보관됩니다.</p>
+          <p class="text-[10px] text-slate-500 mt-1">※ 키는 브라우저 로컬 저장소(localStorage)에만 안전하게 보관됩니다.</p>
         </div>
 
-        <!-- Model Selection -->
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1">Gemini AI 모델 선택</label>
-          <select id="gemini-model-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <label class="block text-xs font-bold text-slate-300 mb-1">Gemini AI 모델 선택</label>
+          <select id="gemini-model-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="gemini-2.0-flash">Gemini 2.0 Flash (초고속 차세대 모델 - 권장)</option>
             <option value="gemini-1.5-flash">Gemini 1.5 Flash (고성능 실시간)</option>
             <option value="gemini-1.5-pro">Gemini 1.5 Pro (복합 심층 추론)</option>
           </select>
         </div>
 
-        <!-- Engine Mode Notice -->
-        <div class="bg-blue-950/40 border border-blue-900/60 rounded-xl p-2.5 text-[10px] text-slate-300 leading-relaxed flex items-start gap-2">
-          <i data-lucide="info" class="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5"></i>
-          <span>API 키가 등록되면 실시간 Gemini LLM/Vision API가 호출되며, 키가 없는 경우에도 내장 지능형 신경망/NLP 엔진으로 모든 AI 기능이 자동 동작합니다.</span>
+        <div class="bg-blue-950/40 border border-blue-900/60 rounded-xl p-3 text-xs text-slate-300 leading-relaxed flex items-start gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+          <span>API 키가 등록되면 실시간 Gemini LLM/Vision API가 호출되며, 키가 없는 경우에도 내장 신경망/NLP 엔진으로 모든 AI 기능이 자동 동작합니다.</span>
         </div>
 
-        <!-- Connection Test Status -->
-        <div id="ai-test-status" class="hidden text-[10px] p-2.5 rounded-xl"></div>
+        <div id="ai-test-status" class="hidden text-xs p-3 rounded-xl"></div>
       </div>
 
       <div class="flex gap-2 pt-1">
-        <button id="test-ai-key-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 flex items-center justify-center gap-1.5 transition">
+        <button id="test-ai-key-btn" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border border-slate-700 text-xs font-medium rounded-xl text-slate-300 flex items-center justify-center gap-1.5 transition cursor-pointer">
           <i data-lucide="zap" class="w-3.5 h-3.5 text-yellow-400"></i>
           <span>연결 테스트</span>
         </button>
-        <button id="save-ai-settings-btn" class="flex-[1.5] py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-bold rounded-xl text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition">
+        <button id="save-ai-settings-btn" class="flex-[1.5] py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-bold rounded-xl text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition cursor-pointer">
           <i data-lucide="save" class="w-3.5 h-3.5"></i>
           <span>설정 저장</span>
         </button>
@@ -682,31 +688,31 @@
   <!-- ========================================================
        MODAL 2: Edit Master Record Modal
   ======================================================== -->
-  <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 z-40 flex items-end modal-overlay">
-    <div class="bg-slate-950 w-full rounded-t-3xl p-4.5 max-h-[85%] overflow-y-auto border-t border-slate-800 modal-sheet">
-      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
+  <div id="edit-modal" class="hidden fixed inset-0 bg-black/75 z-40 flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-slate-950 border border-slate-800 w-full max-w-lg rounded-3xl p-5 max-h-[90vh] overflow-y-auto shadow-2xl modal-sheet space-y-4">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-800">
         <div class="flex items-center gap-2">
-          <div class="bg-blue-600/20 p-1.5 rounded-lg text-blue-400">
-            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          <div class="bg-blue-600/20 p-2 rounded-xl text-blue-400">
+            <i data-lucide="edit-3" class="w-5 h-5"></i>
           </div>
           <div>
             <h3 class="text-sm font-bold text-slate-100">장애이력 상세 및 수정</h3>
-            <p class="text-[10px] text-slate-400" id="edit-modal-id"></p>
+            <p class="text-xs text-slate-400 font-mono" id="edit-modal-id"></p>
           </div>
         </div>
-        <button id="close-modal-btn" class="p-1.5 bg-slate-900 hover:bg-slate-800 rounded-lg text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
-      </div>
-
-      <div class="space-y-3" id="edit-form-fields">
-        <!-- filled dynamically by JS -->
-      </div>
-
-      <div class="flex gap-2 mt-4 pb-2">
-        <button id="delete-item-btn" class="flex-1 py-2.5 bg-red-950 hover:bg-red-900 active:bg-red-800 border border-red-800 text-xs font-medium rounded-xl text-red-400 flex items-center justify-center gap-1.5 transition">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 삭제
+        <button id="close-modal-btn" class="p-1.5 bg-slate-900 hover:bg-slate-800 rounded-lg text-slate-400 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
         </button>
-        <button id="save-item-btn" class="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-semibold rounded-xl text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition">
-          <i data-lucide="save" class="w-3.5 h-3.5"></i> 수정 내용 저장
+      </div>
+
+      <div class="space-y-3" id="edit-form-fields"></div>
+
+      <div class="flex gap-2 pt-2 border-t border-slate-800">
+        <button id="delete-item-btn" class="flex-1 py-2.5 bg-red-950 hover:bg-red-900 active:bg-red-800 border border-red-800 text-xs font-semibold rounded-xl text-red-400 flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
+        </button>
+        <button id="save-item-btn" class="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-bold rounded-xl text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 transition cursor-pointer">
+          <i data-lucide="save" class="w-4 h-4"></i> 수정 내용 저장
         </button>
       </div>
     </div>
@@ -715,33 +721,35 @@
   <!-- ========================================================
        MODAL 3: Confirm Dialog
   ======================================================== -->
-  <div id="confirm-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-6 modal-overlay">
-    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 w-full max-w-xs shadow-2xl modal-sheet">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="bg-red-500/20 p-2 rounded-xl text-red-400">
+  <div id="confirm-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 w-full max-w-sm shadow-2xl modal-sheet space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-red-500/20 p-2.5 rounded-xl text-red-400 border border-red-500/30">
           <i data-lucide="alert-triangle" class="w-5 h-5"></i>
         </div>
         <h4 class="text-sm font-bold text-slate-100">삭제 확인</h4>
       </div>
-      <p id="confirm-text" class="text-xs text-slate-300 mb-4 leading-relaxed"></p>
-      <div class="flex gap-2">
-        <button id="confirm-cancel-btn" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs rounded-xl text-slate-300 transition">취소</button>
-        <button id="confirm-ok-btn" class="flex-1 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-xs font-semibold rounded-xl text-white transition">삭제 실행</button>
+      <p id="confirm-text" class="text-xs text-slate-300 leading-relaxed"></p>
+      <div class="flex gap-2 pt-1">
+        <button id="confirm-cancel-btn" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs rounded-xl text-slate-300 transition cursor-pointer">취소</button>
+        <button id="confirm-ok-btn" class="flex-1 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-xs font-bold rounded-xl text-white transition cursor-pointer">삭제 실행</button>
       </div>
     </div>
   </div>
 
-  <!-- ===================== Toast Notification ===================== -->
-  <div id="toast" class="hidden fixed bottom-20 left-4 right-4 max-w-md mx-auto bg-slate-800/95 backdrop-blur border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 z-50">
+  <!-- ========================================================
+       Toast Notification
+  ======================================================== -->
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 max-w-md w-[90%] bg-slate-800/95 backdrop-blur border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
     <div class="p-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
       <i data-lucide="check-circle" class="w-4 h-4"></i>
     </div>
-    <span id="toast-msg" class="text-xs font-medium text-slate-100"></span>
+    <span id="toast-msg" class="text-xs font-medium text-slate-100 flex-1"></span>
   </div>
 
 </div>
 
+<!-- Load Main Script (Only once) -->
 <script src="app.js"></script>
-<script src="js/app.js"></script>
 </body>
 </html>

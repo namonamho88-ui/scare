@@ -5,8 +5,8 @@
   padding: 0;
 }
 html, body {
-  height: 100%;
-  background-color: #0b1120;
+  min-height: 100%;
+  background-color: #020617;
   color: #f1f5f9;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
   -webkit-tap-highlight-color: transparent;
@@ -15,8 +15,8 @@ html, body {
 
 /* ===== Custom Scrollbar ===== */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.6);
@@ -58,27 +58,6 @@ input:focus, textarea:focus, select:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
   outline: none;
-}
-
-/* ===== Bottom Nav Active State ===== */
-.tab-btn {
-  color: #64748b;
-  position: relative;
-}
-.tab-btn.active {
-  color: #60a5fa;
-}
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 2px;
-  background: #3b82f6;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.6);
 }
 
 /* ===== Input Mode Toggle ===== */
@@ -168,8 +147,8 @@ input:focus, textarea:focus, select:focus {
 
 /* ===== Markdown Rendering for AI Responses ===== */
 .ai-markdown {
-  font-size: 11px;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.7;
   color: #cbd5e1;
 }
 .ai-markdown h1, .ai-markdown h2, .ai-markdown h3 {
@@ -178,9 +157,9 @@ input:focus, textarea:focus, select:focus {
   margin-top: 0.75rem;
   margin-bottom: 0.35rem;
 }
-.ai-markdown h1 { font-size: 13px; }
-.ai-markdown h2 { font-size: 12px; }
-.ai-markdown h3 { font-size: 11.5px; }
+.ai-markdown h1 { font-size: 14px; }
+.ai-markdown h2 { font-size: 13px; }
+.ai-markdown h3 { font-size: 12.5px; }
 .ai-markdown p { margin-bottom: 0.5rem; }
 .ai-markdown ul, .ai-markdown ol {
   padding-left: 1.25rem;
@@ -193,7 +172,7 @@ input:focus, textarea:focus, select:focus {
   padding: 0.15rem 0.35rem;
   border-radius: 4px;
   font-family: monospace;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 .ai-markdown pre {
   background: #020617;

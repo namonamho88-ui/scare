@@ -39,7 +39,7 @@ const SEED_INCIDENTS = [
     current_error_count: '31',
     error_rate: '67.39',
     error_code: 'E-TMS-THRESHOLD',
-    error_msg: '[Web발신]\n[신한카드] TMS 온라인 비즈니스오류 임계치 초과 알림\n▶ IF아이디 : [HPG00760]\n▶ IF명 : [[개인]해외이용 할부전환 신청]\n▶ 업무코드 : [I**]\n▶ 서비스코드 : [SITL****]\n▶ 대외기관 : [-]\n▶ 거래일자 : [20260808]\n▶ 거래시간 : [0850~0950](1시간)\n▶ 현재거래건수 : [46]\n▶ 현재오류건수 : [31]\n▶ 현재오류율 : [67.39]%',
+    error_msg: '[Web발신]\n[신한카드] TMS 온라인 비즈니스오류 임계치 초과 알림\n▶ IF아이디 : [HPG00760]\n▶ IF명 : [[개인]해외이용 할부전환 신청]\n▶ 업무코드 : [I**]\n▶ 서비스코드 : [SITL****]\n▶ 대외기관 : [-]\n▶ 거래일자 : [20260808]\n▶ 현재오류율 : [67.39]%',
     recipients: '신**, 김**, 김**, 김**, 박**',
     msg_datetime: '2026-08-08 10:03:47',
     root_cause: '해외 가맹점 매입 데이터 환율 조회 서비스 세션 타임아웃 및 DB 커넥션 풀 일시 고갈',
@@ -105,7 +105,7 @@ const SEED_INCIDENTS = [
     current_error_count: '46',
     error_rate: '71.87',
     error_code: 'E-TMS-DELAY',
-    error_msg: '[Web발신]\n[신한카드] TMS 온라인 비즈니스오류 임계치 초과 알림\n▶ IF아이디 : [HPG00981]\n▶ IF명 : [[공통]야간정산 배치 결과전송]\n▶ 업무코드 : [B**]\n▶ 서비스코드 : [SBAT****]\n▶ 대외기관 : [-]\n▶ 현재오류율 : [71.87]%',
+    error_msg: '[Web발신]\n[신한카드] TMS 온라인 비즈니스오류 임계치 초과 알림\n▶ IF아이디 : [HPG00981]\n▶ IF명 : [[공통]야간정산 배치 결과전송]\n▶ 업무코드 : [B**]\n▶ 서비스코드 : [SBAT****]\n▶ 현재오류율 : [71.87]%',
     recipients: '김**, 정**',
     msg_datetime: '2026-08-08 02:06:19',
     root_cause: '야간 대용량 가맹점 수수료 정산 테이블 데드락(Deadlock) 발생으로 인한 프로세스 타임아웃',
@@ -186,125 +186,7 @@ const SEED_INCIDENTS = [
 ];
 
 /* ------------------------------------------------------------
-   Application State
------------------------------------------------------------- */
-let state = {
-  activeTab: 'collector',
-  activeInputMode: 'sms',
-  masterList: [],
-  loading: false,
-  parsedData: null,
-  similarIncidents: [],
-  aiDraftMeta: null,
-  editingItem: null,
-  searchQuery: '',
-  statusFilter: '',
-  deptFilter: '',
-  bizCodeFilter: '',
-  agencyFilter: '',
-  ifIdFilter: '',
-  charts: { status: null, dept: null, trend: null },
-  aiChatHistory: [],
-  aiConfig: {
-    apiKey: '',
-    model: 'gemini-2.0-flash',
-    useMockFallback: true
-  }
-};
-
-/* ------------------------------------------------------------
-   DOM & Utility Helpers
------------------------------------------------------------- */
-function $(sel) { return document.querySelector(sel); }
-function $all(sel) { return Array.from(document.querySelectorAll(sel)); }
-
-function refreshIcons() {
-  if (window.lucide) window.lucide.createIcons();
-}
-
-function showToast(msg, icon = 'check-circle') {
-  const toast = $('#toast');
-  if (!toast) return;
-  $('#toast-msg').textContent = msg;
-  toast.classList.remove('hidden');
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => toast.classList.add('hidden'), 3200);
-}
-
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function genIncidentNo() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const seq = String(Math.floor(10 + Math.random() * 89));
-  return `INC-${y}-${m}${d}-${seq}`;
-}
-
-/* ------------------------------------------------------------
-   🔒 Enterprise Security Masking Engine (Strict Multi-Layer)
------------------------------------------------------------- */
-function maskBizCode(code) {
-  if (!code || code === '-' || code === '미확인') return code || '-';
-  if (/^.\*\*$/.test(code)) return code;
-  return code.charAt(0) + '**';
-}
-
-function maskSvcCode(code) {
-  if (!code || code === '-' || code === '미확인') return code || '-';
-  if (/^.{1,4}\*{4}$/.test(code)) return code;
-  const visible = code.length >= 4 ? code.slice(0, 4) : code;
-  return visible + '****';
-}
-
-function maskName(name) {
-  if (!name) return '';
-  const trimmed = name.trim();
-  if (!trimmed || trimmed === '-' || trimmed === '미지정') return trimmed;
-  if (/^.\*\*$/.test(trimmed)) return trimmed;
-  return trimmed.charAt(0) + '**';
-}
-
-function maskRecipients(raw) {
-  if (!raw) return '';
-  return raw
-    .split(/[,/·]/)
-    .map(n => maskName(n.trim()))
-    .filter(Boolean)
-    .join(', ');
-}
-
-function sanitizeRawSms(text, { bizCodeMasked, svcCodeMasked, recipientsMasked }) {
-  let sanitized = text || '';
-  const targets = [
-    { label: '업무\\s*코드', value: bizCodeMasked },
-    { label: '서비스\\s*코드', value: svcCodeMasked },
-    { label: '메시지\\s*수신자|수신자', value: recipientsMasked }
-  ];
-
-  targets.forEach(({ label, value }) => {
-    if (!value) return;
-    const r = extractBracketValue(sanitized, label);
-    if (!r) return;
-    const openBracketIdx = sanitized.indexOf('[', sanitized.search(new RegExp(label)));
-    if (openBracketIdx !== -1 && r.endIndex !== -1) {
-      sanitized = sanitized.slice(0, openBracketIdx + 1) + value + sanitized.slice(r.endIndex);
-    }
-  });
-
-  return sanitized;
-}
-
-/* ------------------------------------------------------------
-   Sample SMS Dataset
+   Sample SMS Content Dictionary
 ------------------------------------------------------------ */
 const SAMPLE_SMS = {
   timeout: `[Web발신]
@@ -393,7 +275,158 @@ const SAMPLE_SMS = {
 };
 
 /* ------------------------------------------------------------
-   Gemini API & AI Engine Integration
+   Application State
+------------------------------------------------------------ */
+let state = {
+  activeTab: 'collector',
+  activeInputMode: 'sms',
+  masterList: [],
+  loading: false,
+  parsedData: null,
+  similarIncidents: [],
+  aiDraftMeta: null,
+  editingItem: null,
+  searchQuery: '',
+  statusFilter: '',
+  deptFilter: '',
+  bizCodeFilter: '',
+  agencyFilter: '',
+  ifIdFilter: '',
+  charts: { status: null, dept: null, trend: null },
+  aiConfig: {
+    apiKey: '',
+    model: 'gemini-2.0-flash'
+  }
+};
+
+/* ------------------------------------------------------------
+   Helper Functions
+------------------------------------------------------------ */
+function $(sel) { return document.querySelector(sel); }
+function $all(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+function refreshIcons() {
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function showToast(msg) {
+  const toast = $('#toast');
+  if (!toast) return;
+  $('#toast-msg').textContent = msg;
+  toast.classList.remove('hidden');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function genIncidentNo() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const seq = String(Math.floor(10 + Math.random() * 89));
+  return `INC-${y}-${m}${d}-${seq}`;
+}
+
+/* ------------------------------------------------------------
+   Global Interactive Action Triggers (Guaranteed Clickability)
+------------------------------------------------------------ */
+window.loadSample = function(key) {
+  const txt = SAMPLE_SMS[key];
+  if (!txt) return;
+  const input = $('#sms-input');
+  if (input) {
+    input.value = txt;
+    input.dispatchEvent(new Event('input'));
+  }
+  const parseBtn = $('#parse-btn');
+  if (parseBtn) parseBtn.disabled = false;
+  saveDraft(txt);
+  showToast(`'${key}' 샘플 데이터를 불러왔습니다. [AI 자동 파싱 실행] 버튼을 누르세요.`);
+};
+
+window.proofreadField = function(targetId) {
+  handleAiProofread(targetId);
+};
+
+window.askAiSample = function(q) {
+  const input = $('#ai-search-input');
+  if (input) {
+    input.value = q;
+    handleAiSearch();
+  }
+};
+
+window.applySimilarAction = function(action, cause) {
+  if (action && $('#p-action')) $('#p-action').value = action;
+  if (cause && $('#p-rootcause')) $('#p-rootcause').value = cause;
+  showToast('과거 유사 장애 조치사항이 적용되었습니다.');
+};
+
+/* ------------------------------------------------------------
+   Enterprise Security Masking Engine
+------------------------------------------------------------ */
+function maskBizCode(code) {
+  if (!code || code === '-' || code === '미확인') return code || '-';
+  if (/^.\*\*$/.test(code)) return code;
+  return code.charAt(0) + '**';
+}
+
+function maskSvcCode(code) {
+  if (!code || code === '-' || code === '미확인') return code || '-';
+  if (/^.{1,4}\*{4}$/.test(code)) return code;
+  const visible = code.length >= 4 ? code.slice(0, 4) : code;
+  return visible + '****';
+}
+
+function maskName(name) {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (!trimmed || trimmed === '-' || trimmed === '미지정') return trimmed;
+  if (/^.\*\*$/.test(trimmed)) return trimmed;
+  return trimmed.charAt(0) + '**';
+}
+
+function maskRecipients(raw) {
+  if (!raw) return '';
+  return raw
+    .split(/[,/·\s]+/)
+    .map(n => maskName(n.trim()))
+    .filter(Boolean)
+    .join(', ');
+}
+
+function sanitizeRawSms(text, { bizCodeMasked, svcCodeMasked, recipientsMasked }) {
+  let sanitized = text || '';
+  const targets = [
+    { label: '업무\\s*코드', value: bizCodeMasked },
+    { label: '서비스\\s*코드', value: svcCodeMasked },
+    { label: '메시지\\s*수신자|수신자', value: recipientsMasked }
+  ];
+
+  targets.forEach(({ label, value }) => {
+    if (!value) return;
+    const r = extractBracketValue(sanitized, label);
+    if (!r) return;
+    const openBracketIdx = sanitized.indexOf('[', sanitized.search(new RegExp(label)));
+    if (openBracketIdx !== -1 && r.endIndex !== -1) {
+      sanitized = sanitized.slice(0, openBracketIdx + 1) + value + sanitized.slice(r.endIndex);
+    }
+  });
+
+  return sanitized;
+}
+
+/* ------------------------------------------------------------
+   Gemini AI & Config Management
 ------------------------------------------------------------ */
 function loadAiConfig() {
   try {
@@ -401,9 +434,7 @@ function loadAiConfig() {
     if (saved) {
       state.aiConfig = { ...state.aiConfig, ...JSON.parse(saved) };
     }
-  } catch (e) {
-    console.warn('Failed to load AI config:', e);
-  }
+  } catch (e) { /* ignore */ }
   updateAiHeaderBadge();
 }
 
@@ -421,27 +452,22 @@ function updateAiHeaderBadge() {
 
   if (state.aiConfig.apiKey) {
     badge.textContent = state.aiConfig.model.replace('gemini-', 'Gemini ').toUpperCase();
-    badge.className = 'font-mono text-[10px] text-emerald-400 font-bold';
+    badge.className = 'font-mono text-xs text-emerald-400 font-bold';
     indicator.className = 'pulse-dot pulse-green';
   } else {
     badge.textContent = '스마트 AI 엔진';
-    badge.className = 'font-mono text-[10px] text-blue-300 font-medium';
+    badge.className = 'font-mono text-xs text-blue-300 font-medium';
     indicator.className = 'pulse-dot pulse-blue';
   }
 }
 
-/* Call Google Gemini REST API */
 async function callGeminiApi(prompt, systemInstruction = '', imageBase64 = null) {
   const apiKey = state.aiConfig.apiKey;
   const model = state.aiConfig.model || 'gemini-2.0-flash';
 
-  if (!apiKey) {
-    throw new Error('NO_API_KEY');
-  }
+  if (!apiKey) throw new Error('NO_API_KEY');
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  const contents = [];
   const parts = [];
 
   if (imageBase64) {
@@ -455,9 +481,10 @@ async function callGeminiApi(prompt, systemInstruction = '', imageBase64 = null)
   }
 
   parts.push({ text: prompt });
-  contents.push({ role: 'user', parts });
+  const payload = {
+    contents: [{ role: 'user', parts }]
+  };
 
-  const payload = { contents };
   if (systemInstruction) {
     payload.system_instruction = { parts: [{ text: systemInstruction }] };
   }
@@ -469,47 +496,20 @@ async function callGeminiApi(prompt, systemInstruction = '', imageBase64 = null)
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const message = errorData?.error?.message || `HTTP ${response.status} Error`;
-    throw new Error(message);
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${response.status}`);
   }
 
   const data = await response.json();
-  const candidate = data.candidates?.[0];
-  if (!candidate || !candidate.content?.parts?.[0]?.text) {
-    throw new Error('Gemini API 응답에서 텍스트를 추출하지 못했습니다.');
-  }
-
-  return candidate.content.parts[0].text;
-}
-
-/* Test Gemini Connection */
-async function testGeminiConnection(apiKey, model) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const start = performance.now();
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: 'Respond with: "OK"' }] }]
-    })
-  });
-
-  const latency = Math.round(performance.now() - start);
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Status ${response.status}`);
-  }
-
-  return { success: true, latency };
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Gemini API 응답 내용이 비어있습니다.');
+  return text;
 }
 
 /* ------------------------------------------------------------
-   Semantic Vector Embedding & Cosine Similarity (RAG Engine)
+   Semantic Vector RAG & NLP Matching Engine
 ------------------------------------------------------------ */
-function tokenizeText(text) {
+function tokenize(text) {
   if (!text) return [];
   return String(text)
     .toLowerCase()
@@ -518,45 +518,43 @@ function tokenizeText(text) {
     .filter(t => t.length >= 2);
 }
 
-function buildVector(tokens, vocabulary) {
-  const vec = new Array(vocabulary.length).fill(0);
+function buildTfVector(tokens, vocab) {
+  const vec = new Array(vocab.length).fill(0);
   const tf = {};
   tokens.forEach(t => { tf[t] = (tf[t] || 0) + 1; });
-  vocabulary.forEach((word, idx) => {
-    if (tf[word]) vec[idx] = tf[word];
+  vocab.forEach((w, idx) => {
+    if (tf[w]) vec[idx] = tf[w];
   });
   return vec;
 }
 
-function cosineSimilarity(vecA, vecB) {
-  let dotProduct = 0, normA = 0, normB = 0;
+function cosineSim(vecA, vecB) {
+  let dot = 0, nA = 0, nB = 0;
   for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
+    dot += vecA[i] * vecB[i];
+    nA += vecA[i] * vecA[i];
+    nB += vecB[i] * vecB[i];
   }
-  if (normA === 0 || normB === 0) return 0;
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  if (nA === 0 || nB === 0) return 0;
+  return dot / (Math.sqrt(nA) * Math.sqrt(nB));
 }
 
-function findSimilarIncidentsSemantic({ ifId = '', ifName = '', bizCode = '', errorCode = '', alertTitle = '', agency = '', rootCause = '' } = {}) {
-  const queryTokens = tokenizeText(`${ifId} ${ifName} ${errorCode} ${alertTitle} ${agency} ${rootCause}`);
-  if (!queryTokens.length || !state.masterList.length) return [];
+function findSimilarIncidentsSemantic({ ifId = '', ifName = '', errorCode = '', alertTitle = '', agency = '', rootCause = '' } = {}) {
+  const qTokens = tokenize(`${ifId} ${ifName} ${errorCode} ${alertTitle} ${agency} ${rootCause}`);
+  if (!qTokens.length || !state.masterList.length) return [];
 
-  // Build full corpus vocabulary
-  const vocabSet = new Set(queryTokens);
+  const vocabSet = new Set(qTokens);
   state.masterList.forEach(item => {
-    tokenizeText(`${item.if_id} ${item.if_name} ${item.error_code} ${item.alert_title} ${item.agency} ${item.root_cause}`).forEach(t => vocabSet.add(t));
+    tokenize(`${item.if_id} ${item.if_name} ${item.error_code} ${item.alert_title} ${item.agency} ${item.root_cause}`).forEach(t => vocabSet.add(t));
   });
   const vocab = Array.from(vocabSet);
-  const queryVec = buildVector(queryTokens, vocab);
+  const qVec = buildTfVector(qTokens, vocab);
 
   const scored = state.masterList.map(item => {
-    const itemTokens = tokenizeText(`${item.if_id} ${item.if_name} ${item.error_code} ${item.alert_title} ${item.agency} ${item.root_cause}`);
-    const itemVec = buildVector(itemTokens, vocab);
-    let sim = cosineSimilarity(queryVec, itemVec);
+    const itemTokens = tokenize(`${item.if_id} ${item.if_name} ${item.error_code} ${item.alert_title} ${item.agency} ${item.root_cause}`);
+    const itemVec = buildTfVector(itemTokens, vocab);
+    let sim = cosineSim(qVec, itemVec);
 
-    // Exact boosts
     let boost = 0;
     if (ifId && ifId !== '미확인' && item.if_id === ifId) boost += 0.35;
     if (agency && agency !== '-' && item.agency === agency) boost += 0.15;
@@ -580,21 +578,19 @@ function findSimilarIncidentsSemantic({ ifId = '', ifName = '', bizCode = '', er
       dept: s.item.dept || '-',
       root_cause: s.item.root_cause || '-',
       action_details: s.item.action_details || '-',
-      prevention: s.item.prevention || '-',
       status: s.item.status || '등록대기'
     }));
 }
 
 /* ------------------------------------------------------------
-   SMS & Log Extraction Engine (Rule + Fuzzy + Gemini Fallback)
+   SMS & Log Parser Engine
 ------------------------------------------------------------ */
 function extractBracketValue(text, labelPattern) {
   const re = new RegExp(labelPattern + '\\s*[:：]?\\s*\\[');
   const m = re.exec(text);
   if (!m) return null;
   const start = m.index + m[0].length;
-  let depth = 1;
-  let i = start;
+  let depth = 1, i = start;
   for (; i < text.length; i++) {
     if (text[i] === '[') depth++;
     else if (text[i] === ']') {
@@ -607,8 +603,7 @@ function extractBracketValue(text, labelPattern) {
 }
 
 function extractLineTrailing(text, endIndex) {
-  let i = endIndex + 1;
-  let out = '';
+  let i = endIndex + 1, out = '';
   while (i < text.length && text[i] !== '\n' && text[i] !== '\r') {
     out += text[i];
     i++;
@@ -616,63 +611,21 @@ function extractLineTrailing(text, endIndex) {
   return out.trim();
 }
 
-function levenshtein(a, b) {
-  a = a || ''; b = b || '';
-  const m = a.length, n = b.length;
-  if (m === 0) return n;
-  if (n === 0) return m;
-  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
-      else dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-    }
-  }
-  return dp[m][n];
-}
-
-function fuzzyExtractValue(text, fuzzyKeywords) {
-  if (!fuzzyKeywords || !fuzzyKeywords.length) return null;
+function fuzzyExtractValue(text, keywords) {
+  if (!keywords || !keywords.length) return null;
   const lines = text.split('\n');
-  const lineStarts = [0];
-  for (let i = 0; i < lines.length - 1; i++) {
-    lineStarts.push(lineStarts[i] + lines[i].length + 1);
-  }
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (let line of lines) {
     const cleaned = line.replace(/^[\s▶▷➤►\-\*·•\u2022>]+/, '');
     const colonIdx = cleaned.search(/[:：]/);
-    if (colonIdx === -1 || colonIdx > 25) continue;
-    const labelPart = cleaned.slice(0, colonIdx).replace(/\s+/g, '').trim();
+    if (colonIdx === -1) continue;
+    const label = cleaned.slice(0, colonIdx).replace(/\s+/g, '').trim();
 
-    let matched = false;
-    for (const kw of fuzzyKeywords) {
-      const kwNorm = kw.replace(/\s+/g, '').trim();
-      if (labelPart === kwNorm || levenshtein(labelPart, kwNorm) <= Math.max(1, Math.floor(kwNorm.length * 0.35))) {
-        matched = true;
-        break;
+    for (let kw of keywords) {
+      if (label.includes(kw.replace(/\s+/g, ''))) {
+        const val = cleaned.slice(colonIdx + 1).replace(/[\[\]]/g, '').trim();
+        if (val) return { value: val, endIndex: -1 };
       }
     }
-    if (!matched) continue;
-
-    const absColon = lineStarts[i] + (line.length - cleaned.length) + colonIdx;
-    let j = absColon + 1;
-    while (j < text.length && /[\s]/.test(text[j]) && text[j] !== '\n') j++;
-
-    if (text[j] === '[') {
-      let depth = 1, k = j + 1;
-      for (; k < text.length; k++) {
-        if (text[k] === '[') depth++;
-        else if (text[k] === ']') { depth--; if (depth === 0) break; }
-      }
-      if (depth === 0) return { value: text.slice(j + 1, k).trim(), endIndex: k };
-    }
-    const lineEndAbs = (i + 1 < lineStarts.length) ? lineStarts[i + 1] - 1 : text.length;
-    const value = text.slice(absColon + 1, lineEndAbs).trim();
-    if (value) return { value, endIndex: lineEndAbs };
   }
   return null;
 }
@@ -685,7 +638,7 @@ function extractField(text, strictPattern, fuzzyKeywords) {
 
 function extractAlertTitle(text) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  for (const line of lines) {
+  for (let line of lines) {
     if (/^\[Web발신\]$/i.test(line)) continue;
     if (line.startsWith('▶') || line.startsWith('#') || line.startsWith('발생시간')) continue;
     return line.replace(/^\[[^\]]*\]\s*/, '').trim();
@@ -693,14 +646,13 @@ function extractAlertTitle(text) {
   return 'TMS 비즈니스오류 알림';
 }
 
-function deriveErrorCode(title, rawText) {
-  const t = `${title} ${rawText}`.toLowerCase();
+function deriveErrorCode(title, raw) {
+  const t = `${title} ${raw}`.toLowerCase();
   if (t.includes('임계치 초과') || t.includes('threshold')) return 'E-TMS-THRESHOLD';
   if (t.includes('지연') || t.includes('timeout') || t.includes('타임아웃')) return 'E-TMS-DELAY';
-  if (t.includes('인증') || t.includes('ssl') || t.includes('권한')) return 'E-TMS-AUTH';
   if (t.includes('배치') || t.includes('batch')) return 'E-TMS-BATCH';
-  if (t.includes('오류') || t.includes('error')) return 'E-TMS-ERROR';
-  return 'E-TMS-ALERT';
+  if (t.includes('인증') || t.includes('ssl')) return 'E-TMS-AUTH';
+  return 'E-TMS-ERROR';
 }
 
 function calculateSeverity(errorRate, threshold, agency) {
@@ -713,60 +665,23 @@ function calculateSeverity(errorRate, threshold, agency) {
 }
 
 /* ------------------------------------------------------------
-   AI Parsing & Diagnosis Orchestration
+   AI Diagnosis & Parsing Logic
 ------------------------------------------------------------ */
-async function parseWithGeminiLLM(rawText) {
-  const systemInstruction = `당신은 금융/IT 엔터프라이즈 장애 관제 전문가 AI입니다.
-주어진 장애 알림 SMS, 메신저 알림, 또는 에러 로그 원문을 분석하여 다음 JSON 형식으로만 응답하세요. 다른 설명이나 마크다운 코드블록 없이 오직 순수 JSON만 출력하세요.
-{
-  "alert_title": "알림 제목",
-  "if_id": "인터페이스 ID (예: HPG00760)",
-  "if_name": "인터페이스 명칭",
-  "biz_code": "업무코드 (예: ITL, MBR, BAT)",
-  "svc_code": "서비스코드 (예: SITL18519A)",
-  "agency": "대외기관명 (없으면 -)",
-  "trade_date": "거래일자 (YYYYMMDD)",
-  "trade_time": "거래시간 (예: 0850~0950)",
-  "agg_datetime": "거래집계일시 (YYYY-MM-DD HH:mm:ss)",
-  "compare_days": "비교일수",
-  "compare_avg_count": "비교기간평균거래건수",
-  "compare_avg_error_count": "비교기간평균오류건수",
-  "compare_avg_error_rate": "비교기간평균오류율",
-  "threshold": "오류율임계치 (숫자만)",
-  "current_count": "현재거래건수",
-  "current_error_count": "현재오류건수",
-  "error_rate": "현재오류율 (숫자만)",
-  "error_code": "내부관리코드 (E-TMS-THRESHOLD, E-TMS-DELAY, E-TMS-ERROR 등)",
-  "recipients": "메시지 수신자 목록",
-  "msg_datetime": "메시지 발생일시",
-  "dept": "추천 담당부서 (카드시스템팀, 디지털플랫폼팀, 데이터운영팀 등)",
-  "root_cause": "추정 장애 근본원인 (구체적 IT 용어)",
-  "action_details": "단계별 조치내용 (1단계 ... / 2단계 ... / 3단계 ...)",
-  "prevention": "재발방지책",
-  "severity": "CRITICAL, HIGH, MEDIUM, NORMAL 중 하나"
-}`;
-
-  const rawJson = await callGeminiApi(`다음 텍스트를 정밀 분석하여 JSON으로 추출하세요:\n\n${rawText}`, systemInstruction);
-  const cleanJson = rawJson.replace(/```json/gi, '').replace(/```/g, '').trim();
-  return JSON.parse(cleanJson);
-}
-
-/* AI Smart Knowledge Diagnosis (Hybrid: Gemini or Smart NLP Engine) */
-async function generateAiDiagnosis(incidentData, similarList = []) {
+async function generateAiDiagnosis(data, similar = []) {
   if (state.aiConfig.apiKey) {
     try {
-      const similarContext = similarList.map(s => `- 과거사례 [${s.incident_no}] (유사도 ${s.score}%): 원인="${s.root_cause}", 조치="${s.action_details}"`).join('\n');
+      const simContext = similar.map(s => `- 과거사례 [${s.incident_no}]: 원인="${s.root_cause}", 조치="${s.action_details}"`).join('\n');
       const prompt = `장애 세부정보:
-- IF아이디: ${incidentData.if_id} (${incidentData.if_name})
-- 대외기관: ${incidentData.agency}
-- 에러코드: ${incidentData.error_code}
-- 현재오류율: ${incidentData.error_rate}% (임계치 ${incidentData.threshold}%)
-- 거래/오류건수: ${incidentData.current_count}건 / ${incidentData.current_error_count}건
+- IF아이디: ${data.if_id} (${data.if_name})
+- 대외기관: ${data.agency}
+- 에러코드: ${data.error_code}
+- 현재오류율: ${data.error_rate}% (임계치 ${data.threshold}%)
+- 거래/오류건수: ${data.current_count}건 / ${data.current_error_count}건
 
-참고할 과거 유사 장애 이력:
-${similarContext || '유사 이력 없음'}
+과거 유사사례:
+${simContext || '유사 이력 없음'}
 
-위 정보를 바탕으로 금융사 IT 엔터프라이즈 기준 다음 JSON을 작성하세요:
+위 정보를 분석하여 다음 JSON으로만 응답하세요:
 {
   "candidates": [
     {"cause": "1순위 원인", "basis": "1순위 판단 근거", "confidence": 85},
@@ -774,19 +689,19 @@ ${similarContext || '유사 이력 없음'}
     {"cause": "3순위 원인", "basis": "3순위 판단 근거", "confidence": 45}
   ],
   "primary_cause": "가장 유력한 원인",
-  "action_steps": "1단계) 긴급 조치 ... / 2단계) 상세 원인 분석 ... / 3단계) 정상화 및 모니터링",
-  "prevention": "구체적 재발방지책 (서킷브레이커, 타임아웃 튜닝, Fallback 등)",
+  "action_steps": "1단계) 긴급 완화 ... / 2단계) 상세 원인 분석 ... / 3단계) 정상화 및 모니터링",
+  "prevention": "재발방지책 (서킷브레이커, 타임아웃 튜닝, 캐시 적용 등)",
   "dept": "카드시스템팀",
-  "basis_summary": "Gemini AI가 과거 ${similarList.length}건의 유사 장애 이력과 오류율 통계를 종합 분석하여 생성한 진단 결과입니다."
+  "basis_summary": "Gemini AI가 과거 ${similar.length}건의 유사 장애 이력과 오류율 통계를 종합 분석하여 생성한 진단 결과입니다."
 }`;
 
-      const resText = await callGeminiApi(prompt, '금융 전산 시스템 장애 진단 전문가로서 순수 JSON만 응답하세요.');
-      const parsed = JSON.parse(resText.replace(/```json/gi, '').replace(/```/g, '').trim());
+      const res = await callGeminiApi(prompt, '금융 전산 시스템 장애 진단 전문가로서 순수 JSON만 출력하세요.');
+      const parsed = JSON.parse(res.replace(/```json/gi, '').replace(/```/g, '').trim());
       return {
         rootCause: parsed.primary_cause || parsed.candidates?.[0]?.cause,
         actionDetails: parsed.action_steps,
         prevention: parsed.prevention,
-        dept: parsed.dept || incidentData.dept || '카드시스템팀',
+        dept: parsed.dept || data.dept || '카드시스템팀',
         meta: {
           basisText: parsed.basis_summary,
           candidates: parsed.candidates || []
@@ -797,10 +712,10 @@ ${similarContext || '유사 이력 없음'}
     }
   }
 
-  // Smart Local Fallback Engine
-  const hay = `${incidentData.error_code} ${incidentData.alert_title} ${incidentData.if_name}`.toLowerCase();
-  const hasAgency = incidentData.agency && incidentData.agency !== '-' && incidentData.agency !== '미확인';
-  const resolved = similarList.filter(s => s.status === '검증완료');
+  // Smart Local Fallback
+  const hay = `${data.error_code} ${data.alert_title} ${data.if_name}`.toLowerCase();
+  const hasAgency = data.agency && data.agency !== '-' && data.agency !== '미확인';
+  const resolved = similar.filter(s => s.status === '검증완료');
 
   const candidates = [];
   resolved.forEach(s => {
@@ -814,9 +729,9 @@ ${similarContext || '유사 이력 없음'}
 
   if (hasAgency) {
     candidates.push({
-      cause: `대외기관(${incidentData.agency}) 전용선 지연 또는 응답 전문 규격 불일치`,
-      action: `대외기관(${incidentData.agency}) 핫라인 연계 상태 점검 및 예비 회선 페일오버 확인`,
-      basis: `대외기관(${incidentData.agency}) 연계 트래픽 임계치 초과 패턴`,
+      cause: `대외기관(${data.agency}) 전용선 지연 또는 응답 전문 규격 불일치`,
+      action: `대외기관(${data.agency}) 핫라인 연계 상태 점검 및 예비 회선 페일오버 확인`,
+      basis: `대외기관(${data.agency}) 연계 트래픽 임계치 초과 패턴`,
       confidence: 75
     });
   }
@@ -831,7 +746,7 @@ ${similarContext || '유사 이력 없음'}
   }
 
   candidates.push({
-    cause: `TMS 비즈니스 오류율 임계치(${incidentData.threshold || '60'}%) 초과 발생 (현재 ${incidentData.error_rate || '70'}%)`,
+    cause: `TMS 비즈니스 오류율 임계치(${data.threshold || '60'}%) 초과 발생 (현재 ${data.error_rate || '70'}%)`,
     action: '오류 응답 상세 로그 트레이스 추적 후 긴급 패치 적용 및 트래픽 헬스체크',
     basis: '기본 TMS 오류율 급증 규칙',
     confidence: 50
@@ -849,7 +764,7 @@ ${similarContext || '유사 이력 없음'}
       '3단계) 서비스 정상화 확인 후 재발방지책 등록 및 모니터링'
     ].join(' / '),
     prevention: hasAgency
-      ? `대외기관(${incidentData.agency}) 타임아웃 서킷브레이커 Fallback 캐시 적용 및 알림 기준 최적화`
+      ? `대외기관(${data.agency}) 타임아웃 서킷브레이커 Fallback 캐시 적용 및 알림 기준 최적화`
       : 'API 응답 타임아웃 세분화 및 모니터링 임계치 사전 경보 체계 구축',
     dept,
     meta: {
@@ -861,23 +776,44 @@ ${similarContext || '유사 이력 없음'}
   };
 }
 
-/* Parse Input into Standard Incident Record */
 async function processIncidentParsing(rawText) {
   const text = (rawText || '').trim();
-  if (!text) throw new Error('입력된 텍스트가 없습니다.');
+  if (!text) throw new Error('입력된 내용이 없습니다.');
 
   let parsed = null;
 
-  // Try Gemini LLM Parsing if API key is active
   if (state.aiConfig.apiKey) {
     try {
-      parsed = await parseWithGeminiLLM(text);
+      const prompt = `다음 장애 알림 텍스트를 분석하여 JSON으로 추출하세요:
+${text}
+
+출력 JSON 형식:
+{
+  "alert_title": "알림 제목",
+  "if_id": "IF아이디",
+  "if_name": "IF명칭",
+  "biz_code": "업무코드",
+  "svc_code": "서비스코드",
+  "agency": "대외기관명 (없으면 -)",
+  "trade_date": "거래일자",
+  "trade_time": "거래시간",
+  "agg_datetime": "거래집계일시",
+  "threshold": "오류율임계치",
+  "current_count": "현재거래건수",
+  "current_error_count": "현재오류건수",
+  "error_rate": "현재오류율",
+  "error_code": "에러코드",
+  "recipients": "수신자",
+  "dept": "담당부서",
+  "severity": "CRITICAL, HIGH, MEDIUM, NORMAL 중 하나"
+}`;
+      const res = await callGeminiApi(prompt, '금융 전산 시스템 전문 AI입니다. 오직 순수 JSON만 응답하세요.');
+      parsed = JSON.parse(res.replace(/```json/gi, '').replace(/```/g, '').trim());
     } catch (e) {
-      console.warn('Gemini LLM parse failed, switching to regex/fuzzy parser:', e);
+      console.warn('Gemini parser fallback to regex:', e);
     }
   }
 
-  // Fallback to NLP / Regex Parser
   if (!parsed) {
     const bracket = (pat, fz) => {
       const r = extractField(text, pat, fz);
@@ -885,7 +821,7 @@ async function processIncidentParsing(rawText) {
     };
 
     const alertTitle = extractAlertTitle(text);
-    const ifId = bracket('IF\\s*아이디', ['IF아이디', 'IF ID', 'IF아이디명']) || bracket('IF\\s*ID', ['IFID']) || 'HPG00760';
+    const ifId = bracket('IF\\s*아이디', ['IF아이디', 'IF ID', 'IFID']) || 'HPG00760';
     const ifName = bracket('IF\\s*명(?!칭)', ['IF명', 'IF명칭']) || '온라인 비즈니스 처리';
     const bizCode = bracket('업무\\s*코드', ['업무코드']) || 'ITL';
     const svcCode = bracket('서비스\\s*코드', ['서비스코드']) || 'SITL18519A';
@@ -894,22 +830,17 @@ async function processIncidentParsing(rawText) {
 
     const tradeTimeR = extractField(text, '거래\\s*시간', ['거래시간']);
     let tradeTime = tradeTimeR ? tradeTimeR.value : '0850~0950';
-    if (tradeTimeR) {
+    if (tradeTimeR && tradeTimeR.endIndex !== -1) {
       const trailing = extractLineTrailing(text, tradeTimeR.endIndex);
       if (trailing) tradeTime += ' ' + trailing;
     }
 
     const aggDatetime = bracket('거래\\s*집계\\s*일시', ['거래집계일시']) || new Date().toLocaleString('ko-KR');
-    const compareDays = bracket('비교\\s*일수', ['비교일수']) || '5';
-    const compareAvgCount = bracket('비교기간\\s*평균\\s*거래\\s*건수', ['비교기간평균거래건수']) || '30';
-    const compareAvgErrorCount = bracket('비교기간\\s*평균\\s*오류\\s*건수', ['비교기간평균오류건수']) || '5';
-    const compareAvgErrorRate = bracket('비교기간\\s*평균\\s*오류율', ['비교기간평균오류율']) || '16.6';
     const threshold = bracket('오류율\\s*임계치', ['오류율임계치']) || '60';
     const currentCount = bracket('현재\\s*거래\\s*건수', ['현재거래건수']) || '50';
     const currentErrorCount = bracket('현재\\s*오류\\s*건수', ['현재오류건수']) || '35';
     const errorRate = bracket('현재\\s*오류율', ['현재오류율']) || '70.00';
     const recipientsRaw = bracket('메시지\\s*수신자', ['메시지수신자', '수신자']) || '신정은, 김찬수';
-    const msgDatetime = bracket('메시지\\s*발생\\s*일시', ['메시지발생일시', '발생일시']) || new Date().toLocaleString('ko-KR');
     const errorCode = deriveErrorCode(alertTitle, text);
 
     parsed = {
@@ -922,45 +853,35 @@ async function processIncidentParsing(rawText) {
       trade_date: tradeDate,
       trade_time: tradeTime,
       agg_datetime: aggDatetime,
-      compare_days: compareDays,
-      compare_avg_count: compareAvgCount,
-      compare_avg_error_count: compareAvgErrorCount,
-      compare_avg_error_rate: compareAvgErrorRate,
       threshold: threshold,
       current_count: currentCount,
       current_error_count: currentErrorCount,
       error_rate: errorRate,
       error_code: errorCode,
       recipients: recipientsRaw,
-      msg_datetime: msgDatetime,
       dept: '카드시스템팀'
     };
   }
 
-  // Apply Security Masking immediately
   const maskedBizCode = maskBizCode(parsed.biz_code);
   const maskedSvcCode = maskSvcCode(parsed.svc_code);
   const maskedRecipients = maskRecipients(parsed.recipients);
   const severity = parsed.severity || calculateSeverity(parsed.error_rate, parsed.threshold, parsed.agency);
 
-  // Mask sensitive parts in raw message
   const sanitizedMsg = sanitizeRawSms(text, {
     bizCodeMasked: maskedBizCode,
     svcCodeMasked: maskedSvcCode,
     recipientsMasked: maskedRecipients
   });
 
-  // Perform Semantic RAG search for similar incidents
   const similar = findSimilarIncidentsSemantic({
     ifId: parsed.if_id,
     ifName: parsed.if_name,
-    bizCode: maskedBizCode,
     errorCode: parsed.error_code,
     alertTitle: parsed.alert_title,
     agency: parsed.agency
   });
 
-  // Generate AI Diagnosis & Action Recommendations
   const diagnosis = await generateAiDiagnosis(parsed, similar);
 
   return {
@@ -974,10 +895,6 @@ async function processIncidentParsing(rawText) {
     trade_date: parsed.trade_date || '-',
     trade_time: parsed.trade_time || '-',
     agg_datetime: parsed.agg_datetime || '-',
-    compare_days: parsed.compare_days || '-',
-    compare_avg_count: parsed.compare_avg_count || '-',
-    compare_avg_error_count: parsed.compare_avg_error_count || '-',
-    compare_avg_error_rate: parsed.compare_avg_error_rate || '-',
     threshold: parsed.threshold || '60',
     current_count: parsed.current_count || '-',
     current_error_count: parsed.current_error_count || '-',
@@ -985,7 +902,6 @@ async function processIncidentParsing(rawText) {
     error_code: parsed.error_code || 'E-TMS-ALERT',
     error_msg: sanitizedMsg,
     recipients: maskedRecipients,
-    msg_datetime: parsed.msg_datetime || '-',
     severity: severity,
     root_cause: diagnosis.rootCause,
     action_details: diagnosis.actionDetails,
@@ -999,7 +915,7 @@ async function processIncidentParsing(rawText) {
 }
 
 /* ------------------------------------------------------------
-   Data Layer (REST Table API with LocalStorage Fallback)
+   Data Persistence Layer
 ------------------------------------------------------------ */
 async function loadMasterList() {
   state.loading = true;
@@ -1007,28 +923,17 @@ async function loadMasterList() {
 
   try {
     let data = [];
-    const res = await fetch(`tables/${TABLE_NAME}?limit=1000&sort=-created_at`).catch(() => null);
-    if (res && res.ok) {
-      const json = await res.json();
-      data = json.data || [];
+    const local = localStorage.getItem(MASTER_STORAGE_KEY);
+    if (local) {
+      data = JSON.parse(local);
+    } else {
+      data = [...SEED_INCIDENTS];
+      localStorage.setItem(MASTER_STORAGE_KEY, JSON.stringify(data));
     }
-
-    if (!data.length) {
-      const local = localStorage.getItem(MASTER_STORAGE_KEY);
-      if (local) {
-        data = JSON.parse(local);
-      } else {
-        data = [...SEED_INCIDENTS];
-        localStorage.setItem(MASTER_STORAGE_KEY, JSON.stringify(data));
-      }
-    }
-
     data.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
     state.masterList = data;
   } catch (e) {
-    console.error('Failed to load master list:', e);
-    const local = localStorage.getItem(MASTER_STORAGE_KEY);
-    state.masterList = local ? JSON.parse(local) : [...SEED_INCIDENTS];
+    state.masterList = [...SEED_INCIDENTS];
   } finally {
     state.loading = false;
     renderMasterList();
@@ -1040,29 +945,12 @@ async function loadMasterList() {
 async function apiCreateIncident(item) {
   item.created_at = Date.now();
   item.id = item.id || `inc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
-  try {
-    await fetch(`tables/${TABLE_NAME}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item)
-    }).catch(() => null);
-  } catch (e) { /* ignore */ }
-
   state.masterList.unshift(item);
   localStorage.setItem(MASTER_STORAGE_KEY, JSON.stringify(state.masterList));
   return item;
 }
 
 async function apiUpdateIncident(id, payload) {
-  try {
-    await fetch(`tables/${TABLE_NAME}/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => null);
-  } catch (e) { /* ignore */ }
-
   const idx = state.masterList.findIndex(i => i.id === id);
   if (idx !== -1) {
     state.masterList[idx] = { ...state.masterList[idx], ...payload, updated_at: Date.now() };
@@ -1071,10 +959,6 @@ async function apiUpdateIncident(id, payload) {
 }
 
 async function apiDeleteIncident(id) {
-  try {
-    await fetch(`tables/${TABLE_NAME}/${id}`, { method: 'DELETE' }).catch(() => null);
-  } catch (e) { /* ignore */ }
-
   state.masterList = state.masterList.filter(i => i.id !== id);
   localStorage.setItem(MASTER_STORAGE_KEY, JSON.stringify(state.masterList));
 }
@@ -1113,33 +997,29 @@ function renderParsedCard() {
   $('#p-alerttitle').textContent = p.alert_title;
   $('#p-ifid-name').textContent = `${p.if_id} / ${p.if_name}`;
   $('#p-svc-agency').textContent = `${p.svc_code} / ${p.agency}`;
-  $('#p-errorrate').textContent = `${p.error_rate}% (임계 ${p.threshold}%)`;
-  $('#p-counts').textContent = `${p.current_count}건 / ${p.current_error_count}건`;
-  $('#p-tradetime').textContent = `${p.trade_date} ${p.trade_time}`;
+  $('#p-errorrate').textContent = `${p.error_rate}% (기준 ${p.threshold}%)`;
+  $('#p-counts').textContent = `거래 ${p.current_count}건 / 오류 ${p.current_error_count}건 (${p.trade_time})`;
   $('#p-errorcode').textContent = p.error_code;
   $('#p-recipients').textContent = p.recipients || '-';
 
-  // Severity badge styling
   const sevBadge = $('#ai-severity-badge');
   if (sevBadge) {
     sevBadge.textContent = p.severity || 'HIGH';
-    if (p.severity === 'CRITICAL') sevBadge.className = 'px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-red-950 text-red-400 border border-red-800';
-    else if (p.severity === 'HIGH') sevBadge.className = 'px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-950 text-amber-400 border border-amber-800';
-    else sevBadge.className = 'px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-blue-950 text-blue-400 border border-blue-800';
+    if (p.severity === 'CRITICAL') sevBadge.className = 'px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-red-950 text-red-400 border border-red-800';
+    else if (p.severity === 'HIGH') sevBadge.className = 'px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-amber-950 text-amber-400 border border-amber-800';
+    else sevBadge.className = 'px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-blue-950 text-blue-400 border border-blue-800';
   }
 
-  // Form values
   $('#p-rootcause').value = p.root_cause || '';
   $('#p-action').value = p.action_details || '';
   $('#p-prevention').value = p.prevention || '';
   $('#p-dept').value = p.dept || '';
   $('#p-assignee').value = p.assignee || '';
 
-  // Duplicate Check
   const dup = findDuplicate(p);
   if (dup) {
     dupWarn.classList.remove('hidden');
-    $('#dup-warning-text').innerHTML = `<strong>유사 이력 발견:</strong> '${escapeHtml(dup.incident_no)}' (${escapeHtml(dup.if_id)} / ${escapeHtml(dup.agg_datetime)})가 이미 마스터에 등록되어 있습니다. 중복 여부를 확인하세요.`;
+    $('#dup-warning-text').innerHTML = `<strong>유사 이력 발견:</strong> '${escapeHtml(dup.incident_no)}' (${escapeHtml(dup.if_id)} / ${escapeHtml(dup.agg_datetime)})가 이미 마스터 시트에 등록되어 있습니다.`;
   } else {
     dupWarn.classList.add('hidden');
   }
@@ -1162,32 +1042,24 @@ function renderSimilarPanel() {
 
   panel.classList.remove('hidden');
   listEl.innerHTML = list.map(s => `
-    <div class="bg-slate-950/80 border border-violet-900/40 hover:border-violet-600/70 rounded-xl p-3 space-y-1.5 transition">
+    <div class="bg-slate-950/80 border border-violet-900/40 hover:border-violet-600/70 rounded-xl p-3.5 space-y-2 transition">
       <div class="flex justify-between items-center">
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-2">
           <span class="text-xs font-mono font-bold text-violet-300">${escapeHtml(s.incident_no)}</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded bg-violet-950 text-violet-300 border border-violet-800">${escapeHtml(s.status)}</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-violet-950 text-violet-300 border border-violet-800">${escapeHtml(s.status)}</span>
         </div>
-        <span class="text-[10px] font-bold text-emerald-400 font-mono bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">유사도 ${s.score}%</span>
+        <span class="text-xs font-bold text-emerald-400 font-mono bg-emerald-950/80 px-2.5 py-0.5 rounded border border-emerald-800">유사도 ${s.score}%</span>
       </div>
-      <div class="text-[11px] text-slate-200 font-medium">${escapeHtml(s.alert_title)} <span class="text-slate-400">(${escapeHtml(s.if_id)})</span></div>
-      <div class="text-[10px] text-slate-400 leading-relaxed"><strong class="text-slate-300">해결 조치:</strong> ${escapeHtml(s.action_details)}</div>
-      <div class="flex justify-between items-center pt-1 border-t border-violet-950">
-        <span class="text-[10px] text-slate-500">담당: ${escapeHtml(s.assignee)} (${escapeHtml(s.dept)})</span>
-        <button data-apply-action="${escapeHtml(s.action_details)}" data-apply-cause="${escapeHtml(s.root_cause)}" class="apply-similar-btn text-[10px] text-violet-400 hover:text-violet-200 flex items-center gap-1 font-medium">
-          <span>이 조치 적용</span> <i data-lucide="arrow-down-right" class="w-3 h-3"></i>
+      <div class="text-xs text-slate-200 font-semibold">${escapeHtml(s.alert_title)} <span class="text-slate-400 font-mono font-normal">(${escapeHtml(s.if_id)})</span></div>
+      <div class="text-xs text-slate-400 leading-relaxed"><strong class="text-slate-300">해결 조치:</strong> ${escapeHtml(s.action_details)}</div>
+      <div class="flex justify-between items-center pt-2 border-t border-violet-950/80">
+        <span class="text-[11px] text-slate-500">담당: ${escapeHtml(s.assignee)} (${escapeHtml(s.dept)})</span>
+        <button onclick="window.applySimilarAction('${escapeHtml(s.action_details)}', '${escapeHtml(s.root_cause)}')" class="text-xs text-violet-400 hover:text-violet-200 flex items-center gap-1 font-semibold cursor-pointer">
+          <span>이 조치사항 적용</span> <i data-lucide="arrow-down-right" class="w-3.5 h-3.5"></i>
         </button>
       </div>
     </div>
   `).join('');
-
-  $all('.apply-similar-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.applyAction) $('#p-action').value = btn.dataset.applyAction;
-      if (btn.dataset.applyCause) $('#p-rootcause').value = btn.dataset.applyCause;
-      showToast('과거 유사사례 조치사항이 적용되었습니다.');
-    });
-  });
 }
 
 function renderAiDraftMeta() {
@@ -1202,7 +1074,7 @@ function renderAiDraftMeta() {
   }
 
   basisEl.classList.remove('hidden');
-  basisEl.innerHTML = `<i data-lucide="lightbulb" class="w-3 h-3 inline-block mr-1 text-yellow-400"></i>${escapeHtml(meta.basisText || '')}`;
+  basisEl.innerHTML = `<i data-lucide="lightbulb" class="w-4 h-4 inline-block mr-1 text-yellow-400"></i>${escapeHtml(meta.basisText || '')}`;
 
   const candidates = meta.candidates || [];
   if (!candidates.length) {
@@ -1210,31 +1082,23 @@ function renderAiDraftMeta() {
   } else {
     candEl.classList.remove('hidden');
     candEl.innerHTML = `
-      <div class="text-[10px] text-slate-400 font-bold mb-1 flex items-center justify-between">
+      <div class="text-xs text-slate-400 font-bold mb-1.5 flex items-center justify-between">
         <span>유력 원인 후보 (클릭 시 자동 적용)</span>
-        <span class="text-[9px] text-blue-400 font-mono">Confidence Ranked</span>
+        <span class="text-[10px] text-blue-400 font-mono">Confidence Ranked</span>
       </div>
-      <div class="space-y-1">
+      <div class="space-y-1.5">
         ${candidates.map((c, idx) => `
-          <div data-cause="${escapeHtml(c.cause)}" data-action="${escapeHtml(c.action || '')}" class="cause-candidate-item cursor-pointer bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/60 rounded-xl px-2.5 py-2 transition">
-            <div class="flex justify-between items-center mb-0.5">
-              <span class="text-[10px] font-bold text-blue-300">${idx + 1}순위 후보</span>
-              <span class="text-[9px] font-bold text-blue-400 font-mono bg-blue-950 px-1.5 py-0.2 rounded border border-blue-900">확신도 ${c.confidence}%</span>
+          <div onclick="document.getElementById('p-rootcause').value = '${escapeHtml(c.cause)}'; showToast('선택한 원인 후보가 반영되었습니다.');" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/60 rounded-xl p-3 transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-blue-300">${idx + 1}순위 원인 후보</span>
+              <span class="text-[10px] font-bold text-blue-400 font-mono bg-blue-950 px-2 py-0.5 rounded border border-blue-900">확신도 ${c.confidence}%</span>
             </div>
-            <div class="text-[11px] text-slate-200 font-medium">${escapeHtml(c.cause)}</div>
-            <div class="text-[9px] text-slate-500 mt-0.5">${escapeHtml(c.basis)}</div>
+            <div class="text-xs text-slate-200 font-medium">${escapeHtml(c.cause)}</div>
+            <div class="text-[11px] text-slate-500 mt-1">${escapeHtml(c.basis)}</div>
           </div>
         `).join('')}
       </div>
     `;
-
-    $all('.cause-candidate-item').forEach(item => {
-      item.addEventListener('click', () => {
-        $('#p-rootcause').value = item.dataset.cause;
-        if (item.dataset.action) $('#p-action').value = item.dataset.action;
-        showToast('선택한 원인 후보가 입력란에 반영되었습니다.');
-      });
-    });
   }
 }
 
@@ -1278,12 +1142,6 @@ function populateFilterOptions() {
   buildOptions($('#agency-filter'), state.masterList.map(i => i.agency), '전체 기관', state.agencyFilter);
 }
 
-function updateFilterActiveDot() {
-  const active = !!(state.statusFilter || state.deptFilter || state.bizCodeFilter || state.agencyFilter || state.ifIdFilter);
-  const dot = $('#filter-active-dot');
-  if (dot) dot.classList.toggle('hidden', !active);
-}
-
 function renderMasterList() {
   const listEl = $('#master-list');
   const emptyEl = $('#master-empty');
@@ -1300,8 +1158,6 @@ function renderMasterList() {
   listEl.classList.remove('hidden');
 
   populateFilterOptions();
-  updateFilterActiveDot();
-
   const filtered = getFilteredList();
   $('#master-total').textContent = state.masterList.length;
 
@@ -1317,54 +1173,50 @@ function renderMasterList() {
     const isCritical = item.severity === 'CRITICAL' || parseFloat(item.error_rate) >= 80;
 
     return `
-      <div class="master-card bg-slate-950 border border-slate-800/90 rounded-2xl p-3.5 cursor-pointer shadow-lg space-y-2.5" data-id="${escapeHtml(item.id)}">
+      <div class="master-card bg-slate-950 border border-slate-800 rounded-2xl p-4 cursor-pointer shadow-lg space-y-3" onclick="openEditModal('${escapeHtml(item.id)}')">
         <div class="flex justify-between items-start">
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-mono font-bold text-blue-400">${escapeHtml(item.incident_no || '-')}</span>
-            ${isCritical ? '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-red-950 text-red-400 border border-red-800">CRITICAL</span>' : ''}
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-mono font-bold text-blue-400">${escapeHtml(item.incident_no || '-')}</span>
+            ${isCritical ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-950 text-red-400 border border-red-800">CRITICAL</span>' : ''}
           </div>
-          <span class="px-2 py-0.5 rounded text-[10px] font-medium border ${badgeCls}">${escapeHtml(item.status || '등록대기')}</span>
+          <span class="px-2.5 py-0.5 rounded text-xs font-medium border ${badgeCls}">${escapeHtml(item.status || '등록대기')}</span>
         </div>
 
         <div>
-          <h4 class="text-xs font-bold text-slate-100 truncate">${escapeHtml(item.alert_title || '-')}</h4>
-          <div class="text-[11px] text-slate-400 font-mono mt-0.5">${escapeHtml(item.if_id)} · ${escapeHtml(item.svc_code)}${item.agency && item.agency !== '-' ? ' · ' + escapeHtml(item.agency) : ''}</div>
+          <h4 class="text-sm font-bold text-slate-100 truncate">${escapeHtml(item.alert_title || '-')}</h4>
+          <div class="text-xs text-slate-400 font-mono mt-0.5">${escapeHtml(item.if_id)} · ${escapeHtml(item.svc_code)}${item.agency && item.agency !== '-' ? ' · ' + escapeHtml(item.agency) : ''}</div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <div class="bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-800/60">
-            <span class="text-[9px] text-slate-500 block">내부관리코드</span>
+          <div class="bg-slate-900/90 rounded-xl p-2.5 border border-slate-800/80">
+            <span class="text-[10px] text-slate-500 block">내부관리코드</span>
             <span class="text-xs text-yellow-400 font-mono truncate block">${escapeHtml(item.error_code)}</span>
           </div>
-          <div class="bg-slate-900/90 rounded-xl px-2.5 py-1.5 border border-slate-800/60">
-            <span class="text-[9px] text-slate-500 block">오류율 (임계치)</span>
+          <div class="bg-slate-900/90 rounded-xl p-2.5 border border-slate-800/80">
+            <span class="text-[10px] text-slate-500 block">오류율 (임계치)</span>
             <span class="text-xs ${isCritical ? 'text-red-400' : 'text-amber-400'} font-mono font-bold">${escapeHtml(item.error_rate)}% (${escapeHtml(item.threshold)}%)</span>
           </div>
         </div>
 
-        <div class="space-y-1 text-[11px] leading-relaxed">
+        <div class="space-y-1 text-xs leading-relaxed">
           <div class="text-slate-300"><span class="text-slate-500 font-medium">원인: </span>${escapeHtml(item.root_cause || '-')}</div>
           <div class="text-slate-300"><span class="text-slate-500 font-medium">조치: </span>${escapeHtml(item.action_details || '-')}</div>
         </div>
 
-        <div class="flex justify-between items-center pt-2 border-t border-slate-900 text-[10px] text-slate-500">
-          <div class="flex items-center gap-1.5">
+        <div class="flex justify-between items-center pt-2.5 border-t border-slate-900 text-xs text-slate-500">
+          <div class="flex items-center gap-2">
             <span>${escapeHtml(item.dept || '-')}</span>
             <span>·</span>
-            <span>담당: <strong class="text-slate-400">${escapeHtml(item.assignee || '미지정')}</strong></span>
+            <span>담당: <strong class="text-slate-300">${escapeHtml(item.assignee || '미지정')}</strong></span>
           </div>
-          <div class="flex items-center gap-0.5 text-blue-400">
+          <div class="flex items-center gap-1 text-blue-400 text-xs font-medium">
             <span>상세보기</span>
-            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
           </div>
         </div>
       </div>
     `;
   }).join('');
-
-  $all('.master-card').forEach(card => {
-    card.addEventListener('click', () => openEditModal(card.dataset.id));
-  });
 
   refreshIcons();
 }
@@ -1410,7 +1262,7 @@ function renderStatusChart(list) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { color: chartTextColor(), font: { size: 10 }, boxWidth: 10 } }
+        legend: { position: 'bottom', labels: { color: chartTextColor(), font: { size: 11 }, boxWidth: 12 } }
       }
     }
   });
@@ -1431,7 +1283,7 @@ function renderDeptChart(list) {
         data: Object.values(counts),
         backgroundColor: '#3b82f6',
         borderRadius: 6,
-        maxBarThickness: 24
+        maxBarThickness: 28
       }]
     },
     options: {
@@ -1439,7 +1291,7 @@ function renderDeptChart(list) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: chartTextColor(), font: { size: 9 } }, grid: { display: false } },
+        x: { ticks: { color: chartTextColor(), font: { size: 10 } }, grid: { display: false } },
         y: { beginAtZero: true, ticks: { color: chartTextColor(), stepSize: 1 }, grid: { color: chartGridColor() } }
       }
     }
@@ -1468,7 +1320,7 @@ function renderTrendChart(list) {
         backgroundColor: 'rgba(56,189,248,0.15)',
         tension: 0.35,
         fill: true,
-        pointRadius: 3
+        pointRadius: 4
       }]
     },
     options: {
@@ -1476,7 +1328,7 @@ function renderTrendChart(list) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: chartTextColor(), font: { size: 9 } }, grid: { display: false } },
+        x: { ticks: { color: chartTextColor(), font: { size: 10 } }, grid: { display: false } },
         y: { beginAtZero: true, ticks: { color: chartTextColor(), stepSize: 1 }, grid: { color: chartGridColor() } }
       }
     }
@@ -1505,7 +1357,6 @@ async function handleAiSearch() {
   `;
   refreshIcons();
 
-  // Find Semantic RAG context
   const matches = findSimilarIncidentsSemantic({ alertTitle: q, rootCause: q });
 
   if (state.aiConfig.apiKey) {
@@ -1519,8 +1370,7 @@ ${contextText}
 지침:
 1. 마스터 시트에 등록된 실제 장애 관리번호 [INC-...]와 IF 명칭을 구체적으로 인용하여 명확히 답변하세요.
 2. 해결 절차, 원인, 재발방지책을 단계별로 깔끔하게 정리하세요.
-3. 마크다운 형식(소제목, 글머리 기호, 굵은 글씨)으로 가독성 높게 작성하세요.
-4. 추가로 확인하면 좋은 연관 질문 2개를 하단에 제안하세요.`;
+3. 마크다운 형식으로 가독성 높게 작성하세요.`;
 
       const responseMd = await callGeminiApi(prompt, '금융 전산 시스템 전문 AI 어시스턴트입니다.');
       resultEl.innerHTML = `<div class="ai-markdown">${window.marked ? window.marked.parse(responseMd) : responseMd}</div>`;
@@ -1531,20 +1381,20 @@ ${contextText}
     }
   }
 
-  // Local RAG Answer Synthesizer
+  // Local RAG Synthesizer
   setTimeout(() => {
     if (!matches.length) {
       resultEl.innerHTML = `
         <div class="text-slate-300 text-xs">
           <p>질문하신 <strong>"${escapeHtml(q)}"</strong>에 대한 직접 일치하는 장애이력을 찾지 못했습니다.</p>
-          <p class="text-[10px] text-slate-500 mt-1">대외기관명(코스콤, 금융결제원, NICE 등)이나 IF아이디(HPG00760, HPG00512 등)로 다시 질문해보세요.</p>
+          <p class="text-[11px] text-slate-500 mt-1">대외기관명(코스콤, 금융결제원, NICE 등)이나 IF아이디(HPG00760, HPG00512 등)로 다시 질문해보세요.</p>
         </div>
       `;
       return;
     }
 
     const top = matches[0];
-    const answerHtml = `
+    resultEl.innerHTML = `
       <div class="ai-markdown space-y-2">
         <p>질문하신 <strong>"${escapeHtml(q)}"</strong>과 가장 연관도 높은 장애이력은 <code>${escapeHtml(top.incident_no)}</code> (유사도 ${top.score}%)입니다.</p>
         
@@ -1561,23 +1411,18 @@ ${contextText}
         <h3>🛠 표준 조치 절차</h3>
         <p>${escapeHtml(top.action_details)}</p>
 
-        <h3>🛡 재발방지책</h3>
-        <p>${escapeHtml(top.prevention || '정기 모니터링 및 임계치 기준 사전 조율')}</p>
-        
         ${matches.length > 1 ? `
-          <div class="pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+          <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
             <strong>함께 참고할 연관 이력:</strong> ${matches.slice(1).map(m => `<code>${escapeHtml(m.incident_no)}</code> (${escapeHtml(m.alert_title)})`).join(', ')}
           </div>
         ` : ''}
       </div>
     `;
-
-    resultEl.innerHTML = answerHtml;
     refreshIcons();
-  }, 700);
+  }, 600);
 }
 
-/* AI Executive Insight Report Generator */
+/* Executive Insight Report Generator */
 async function handleAiReport() {
   const btn = $('#ai-report-btn');
   const resultEl = $('#ai-report-result');
@@ -1590,10 +1435,9 @@ async function handleAiReport() {
   }
 
   btn.disabled = true;
-  btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>생성 중...</span>`;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>생성 중...</span>`;
   refreshIcons();
 
-  // Statistics compilation
   const countBy = (key) => {
     const counts = {};
     state.masterList.forEach(i => { const v = i[key] || '미확인'; if (v !== '-' && v !== '미확인') counts[v] = (counts[v] || 0) + 1; });
@@ -1618,12 +1462,7 @@ ${summaryData}
 - 최다 발생 IF: ${topIf.slice(0, 3).map(x => `${x[0]}(${x[1]}건)`).join(', ')}
 - 최다 장애 대외기관: ${topAgency.slice(0, 3).map(x => `${x[0]}(${x[1]}건)`).join(', ')}
 
-위 통계를 바탕으로 최고기술책임자(CTO/CIO) 및 IT 리더십 보고용 'Executive 종합 장애 인사이트 & 인프라 안정화 리포트'를 마크다운 형식으로 작성하세요.
-포함할 섹션:
-1. 📋 Executive Summary (핵심 현황 및 안정성 평가)
-2. ⚠️ 고위험 인터페이스 및 대외기관 병목 분석
-3. 🔍 장애 근본 원인 분류 (인프라 타임아웃 / 쿼리 데드락 / 대외기관 네트워크)
-4. 💡 차기 분기 IT 아키텍처 개선 핵심 권고사항 3가지`;
+위 통계를 바탕으로 최고기술책임자(CTO/CIO) 및 IT 리더십 보고용 'Executive 종합 장애 인사이트 & 인프라 안정화 리포트'를 마크다운 형식으로 작성하세요.`;
 
       const reportMd = await callGeminiApi(prompt, '엔터프라이즈 금융 IT SRE 및 인프라 총괄 아키텍트입니다.');
       emptyEl.classList.add('hidden');
@@ -1631,7 +1470,7 @@ ${summaryData}
       actionsEl.classList.remove('hidden');
       resultEl.innerHTML = `<div class="ai-markdown">${window.marked ? window.marked.parse(reportMd) : reportMd}</div>`;
       btn.disabled = false;
-      btn.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3"></i><span>리포트 재생성</span>`;
+      btn.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>리포트 재생성</span>`;
       refreshIcons();
       showToast('Gemini AI Executive 리포트가 생성되었습니다.');
       return;
@@ -1640,7 +1479,7 @@ ${summaryData}
     }
   }
 
-  // Local Executive Report Generator
+  // Local Report Generator
   setTimeout(() => {
     emptyEl.classList.add('hidden');
     resultEl.classList.remove('hidden');
@@ -1653,7 +1492,7 @@ ${summaryData}
     resultEl.innerHTML = `
       <div class="ai-markdown space-y-3">
         <h2>📋 CARE Executive 장애 인사이트 리포트</h2>
-        <p class="text-[10px] text-slate-400">발행일시: ${new Date().toLocaleString('ko-KR')} | 분석대상: 총 ${state.masterList.length}건</p>
+        <p class="text-[11px] text-slate-400">발행일시: ${new Date().toLocaleString('ko-KR')} | 분석대상: 총 ${state.masterList.length}건</p>
 
         <h3>1. 핵심 지표 및 종합 평가</h3>
         <ul>
@@ -1679,10 +1518,10 @@ ${summaryData}
     `;
 
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3"></i><span>리포트 재생성</span>`;
+    btn.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>리포트 재생성</span>`;
     refreshIcons();
     showToast('AI 인사이트 리포트가 생성되었습니다.');
-  }, 800);
+  }, 600);
 }
 
 /* AI Smart Proofreader */
@@ -1767,7 +1606,6 @@ async function runOcrOnFile(file) {
   $('#ocr-progress-pct').textContent = '10%';
   $('#ocr-progress-label').textContent = '이미지 분석 및 OCR 인식 중...';
 
-  // Read base64 for Vision AI
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64Data = e.target.result;
@@ -1793,7 +1631,6 @@ async function runOcrOnFile(file) {
       }
     }
 
-    // Local Tesseract OCR
     if (!window.Tesseract) {
       showToast('OCR 라이브러리를 불러오지 못했습니다.');
       $('#ocr-progress').classList.add('hidden');
@@ -1828,7 +1665,7 @@ async function runOcrOnFile(file) {
 }
 
 /* ------------------------------------------------------------
-   Manual Form Builder & Event Handlers
+   Manual Form Builder
 ------------------------------------------------------------ */
 const MANUAL_FIELD_GROUPS = [
   {
@@ -1866,13 +1703,13 @@ function renderManualForm() {
   const container = $('#manual-form-fields');
   if (!container) return;
   container.innerHTML = MANUAL_FIELD_GROUPS.map(group => `
-    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 space-y-2">
-      <div class="text-[11px] font-bold text-blue-400">${group.title}</div>
-      <div class="grid grid-cols-2 gap-2">
+    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+      <div class="text-xs font-bold text-blue-400">${group.title}</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         ${group.fields.map(f => `
-          <div class="${f.key === 'if_name' || f.key === 'recipients_raw' ? 'col-span-2' : ''}">
-            <label class="block text-[10px] text-slate-400 mb-0.5">${f.label}</label>
-            <input data-manual-field="${f.key}" type="text" placeholder="${f.placeholder}" class="manual-field w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <div class="${f.key === 'if_name' || f.key === 'recipients_raw' ? 'sm:col-span-2' : ''}">
+            <label class="block text-[11px] text-slate-400 mb-1">${f.label}</label>
+            <input data-manual-field="${f.key}" type="text" placeholder="${f.placeholder}" class="manual-field w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
         `).join('')}
       </div>
@@ -1903,8 +1740,12 @@ function switchTab(tabKey) {
   $all('.tab-panel').forEach(p => p.classList.add('hidden'));
   $(`#tab-${tabKey}`).classList.remove('hidden');
 
-  $all('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === tabKey);
+  $all('.tab-nav-btn').forEach(btn => {
+    const isActive = btn.dataset.tab === tabKey;
+    btn.classList.toggle('border-blue-500', isActive);
+    btn.classList.toggle('text-blue-400', isActive);
+    btn.classList.toggle('border-transparent', !isActive);
+    btn.classList.toggle('text-slate-400', !isActive);
   });
 
   if (tabKey === 'status') renderDashboard();
@@ -1959,8 +1800,8 @@ async function handleParse() {
   const btn = $('#parse-btn');
   const btnText = $('#parse-btn-text');
   btn.disabled = true;
-  btnText.textContent = 'AI 파싱 및 진단 생성 중...';
-  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini AI 분석 중...</span>`;
+  btnText.textContent = 'Gemini AI 분석 및 정밀 진단 생성 중...';
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Gemini AI 분석 및 정밀 진단 생성 중...</span>`;
   refreshIcons();
 
   try {
@@ -1975,7 +1816,7 @@ async function handleParse() {
     showToast('파싱 중 오류가 발생했습니다.');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-yellow-300"></i><span>Gemini AI 지능형 자동 파싱 실행</span>`;
+    btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-yellow-300"></i><span>Gemini AI 지능형 자동 파싱 & 진단 실행</span>`;
     refreshIcons();
   }
 }
@@ -2001,7 +1842,7 @@ async function handleManualParse() {
     showToast('파싱 오류가 발생했습니다.');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i><span>입력값으로 AI 파싱 실행</span>`;
+    btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i><span>입력값으로 AI 파싱 & 진단 실행</span>`;
     refreshIcons();
   }
 }
@@ -2064,7 +1905,7 @@ async function handleRegister() {
     console.error(e);
     showToast('등록에 실패했습니다.');
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i> 마스터에 적재`;
+    btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i> 마스터 시트에 적재`;
     refreshIcons();
   }
 }
@@ -2128,7 +1969,7 @@ const EDIT_FIELDS = [
   { key: 'status', label: '상태', select: ['등록대기', '검증중', '검증완료'] }
 ];
 
-function openEditModal(id) {
+window.openEditModal = function(id) {
   const item = state.masterList.find(i => i.id === id);
   if (!item) return;
   state.editingItem = item;
@@ -2140,7 +1981,7 @@ function openEditModal(id) {
     if (f.select) {
       return `
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1">${f.label}</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1">${f.label}</label>
           <select data-field="${f.key}" class="edit-field w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             ${f.select.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('')}
           </select>
@@ -2149,7 +1990,7 @@ function openEditModal(id) {
     if (f.textarea && f.locked) {
       return `
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1 flex items-center gap-1">
+          <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1">
             <i data-lucide="lock" class="w-3 h-3 text-slate-500"></i>${f.label}
           </label>
           <textarea data-field="${f.key}" readonly class="edit-field w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 h-20 resize-none cursor-not-allowed font-mono">${escapeHtml(value)}</textarea>
@@ -2158,14 +1999,14 @@ function openEditModal(id) {
     if (f.textarea) {
       return `
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1">${f.label}</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1">${f.label}</label>
           <textarea data-field="${f.key}" class="edit-field w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 h-16 resize-none">${escapeHtml(value)}</textarea>
         </div>`;
     }
     if (f.locked) {
       return `
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1 flex items-center gap-1">
+          <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1">
             <i data-lucide="lock" class="w-3 h-3 text-slate-500"></i>${f.label}
           </label>
           <input data-field="${f.key}" type="text" value="${escapeHtml(value)}" readonly class="edit-field w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 cursor-not-allowed font-mono" />
@@ -2173,14 +2014,14 @@ function openEditModal(id) {
     }
     return `
       <div>
-        <label class="block text-[11px] font-bold text-slate-300 mb-1">${f.label}</label>
+        <label class="block text-xs font-bold text-slate-300 mb-1">${f.label}</label>
         <input data-field="${f.key}" type="text" value="${escapeHtml(value)}" class="edit-field w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>`;
   }).join('');
 
   $('#edit-modal').classList.remove('hidden');
   refreshIcons();
-}
+};
 
 function closeEditModal() {
   $('#edit-modal').classList.add('hidden');
@@ -2213,7 +2054,7 @@ async function handleSaveEdit() {
     showToast('저장에 실패했습니다.');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="save" class="w-3.5 h-3.5"></i> 수정 내용 저장`;
+    btn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> 수정 내용 저장`;
     refreshIcons();
   }
 }
@@ -2252,7 +2093,7 @@ function showConfirm(text, onConfirm) {
 }
 
 /* ------------------------------------------------------------
-   Excel Export (SheetJS)
+   Excel Export
 ------------------------------------------------------------ */
 function handleExportExcel() {
   if (!state.masterList.length) {
@@ -2298,23 +2139,15 @@ function handleExportExcel() {
 }
 
 /* ------------------------------------------------------------
-   Event Bindings & Initialization
+   Event Bindings
 ------------------------------------------------------------ */
 function bindEvents() {
-  $all('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+  $all('.tab-nav-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
   $all('.input-mode-btn').forEach(btn => btn.addEventListener('click', () => switchInputMode(btn.dataset.inputMode)));
 
   $('#sms-input').addEventListener('input', (e) => {
     $('#parse-btn').disabled = !e.target.value.trim();
     saveDraft(e.target.value);
-  });
-
-  $all('.sample-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      $('#sms-input').value = SAMPLE_SMS[btn.dataset.sample];
-      $('#parse-btn').disabled = false;
-      saveDraft($('#sms-input').value);
-    });
   });
 
   $('#clear-input-btn').addEventListener('click', () => {
@@ -2329,12 +2162,11 @@ function bindEvents() {
   $('#copy-parsed-btn').addEventListener('click', handleCopyParsed);
   $('#copy-messenger-btn').addEventListener('click', handleCopyMessenger);
 
-  // AI Deep Diagnosis Button in Parsed Card
   $('#ai-diagnose-btn').addEventListener('click', async () => {
     if (!state.parsedData) return;
     const btn = $('#ai-diagnose-btn');
     btn.disabled = true;
-    btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i><span>진단 중...</span>`;
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>진단 중...</span>`;
     refreshIcons();
 
     const diagnosis = await generateAiDiagnosis(state.parsedData, state.similarIncidents);
@@ -2350,17 +2182,12 @@ function bindEvents() {
 
     renderAiDraftMeta();
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="brain-circuit" class="w-3 h-3"></i><span>AI 재진단 실행</span>`;
+    btn.innerHTML = `<i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i><span>AI 재진단 실행</span>`;
     refreshIcons();
     showToast('Gemini AI 정밀 진단이 갱신되었습니다.');
   });
 
-  // AI Proofreaders
-  $all('.ai-proof-btn').forEach(btn => {
-    btn.addEventListener('click', () => handleAiProofread(btn.dataset.proofTarget));
-  });
-
-  // Manual Form
+  // Manual Form Inputs
   $('#manual-form-fields').addEventListener('input', () => {
     const hasVal = $all('.manual-field').some(el => el.value.trim());
     $('#manual-parse-btn').disabled = !hasVal;
@@ -2371,7 +2198,7 @@ function bindEvents() {
     $('#manual-parse-btn').disabled = true;
   });
 
-  // Image OCR & Paste
+  // Image Drop & OCR
   $('#image-file-input').addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (file) runOcrOnFile(file);
@@ -2405,7 +2232,7 @@ function bindEvents() {
   $('#image-clear-btn').addEventListener('click', resetImageMode);
   $('#image-parse-btn').addEventListener('click', handleImageParse);
 
-  // Search & Filter
+  // Search & Filters
   $('#search-input').addEventListener('input', (e) => {
     state.searchQuery = e.target.value;
     renderMasterList();
@@ -2425,15 +2252,9 @@ function bindEvents() {
     showToast('필터 조건이 초기화되었습니다.');
   });
 
-  // AI Hub Tab Events
+  // AI Hub Events
   $('#ai-search-btn').addEventListener('click', handleAiSearch);
   $('#ai-search-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAiSearch(); });
-  $all('.ai-sample-q').forEach(btn => {
-    btn.addEventListener('click', () => {
-      $('#ai-search-input').value = btn.dataset.q;
-      handleAiSearch();
-    });
-  });
   $('#ai-report-btn').addEventListener('click', handleAiReport);
   $('#ai-report-copy-btn').addEventListener('click', () => {
     const text = $('#ai-report-result').innerText;
@@ -2461,7 +2282,6 @@ function bindEvents() {
     $('#ai-settings-modal').classList.remove('hidden');
   };
   $('#open-ai-settings-btn').addEventListener('click', openSettings);
-  $('#ai-quick-settings-btn').addEventListener('click', openSettings);
   $('#close-ai-settings-btn').addEventListener('click', () => $('#ai-settings-modal').classList.add('hidden'));
 
   $('#toggle-key-visibility-btn').addEventListener('click', () => {
@@ -2483,23 +2303,36 @@ function bindEvents() {
     const statusEl = $('#ai-test-status');
 
     if (!key) {
-      statusEl.className = 'text-[10px] p-2.5 rounded-xl bg-amber-950/60 text-amber-300 border border-amber-800';
+      statusEl.className = 'text-xs p-3 rounded-xl bg-amber-950/60 text-amber-300 border border-amber-800';
       statusEl.innerHTML = '⚠️ API 키가 입력되지 않았습니다. 내장 AI 모드로 동작합니다.';
       statusEl.classList.remove('hidden');
       return;
     }
 
-    statusEl.className = 'text-[10px] p-2.5 rounded-xl bg-blue-950/60 text-blue-300 border border-blue-800 flex items-center gap-1.5';
-    statusEl.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i><span>Google Gemini 서버와 통신 테스트 중...</span>';
+    statusEl.className = 'text-xs p-3 rounded-xl bg-blue-950/60 text-blue-300 border border-blue-800 flex items-center gap-2';
+    statusEl.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Google Gemini 서버와 통신 테스트 중...</span>';
     statusEl.classList.remove('hidden');
     refreshIcons();
 
     try {
-      const res = await testGeminiConnection(key, model);
-      statusEl.className = 'text-[10px] p-2.5 rounded-xl bg-emerald-950/80 text-emerald-300 border border-emerald-800';
-      statusEl.innerHTML = `✅ 연결 성공! (${res.latency}ms 응답) ${model} 모델을 즉시 사용할 수 있습니다.`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const start = performance.now();
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Ping' }] }] })
+      });
+      const latency = Math.round(performance.now() - start);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `Status ${res.status}`);
+      }
+
+      statusEl.className = 'text-xs p-3 rounded-xl bg-emerald-950/80 text-emerald-300 border border-emerald-800';
+      statusEl.innerHTML = `✅ 연결 성공! (${latency}ms 응답) ${model} 모델을 즉시 사용할 수 있습니다.`;
     } catch (err) {
-      statusEl.className = 'text-[10px] p-2.5 rounded-xl bg-red-950/80 text-red-300 border border-red-800';
+      statusEl.className = 'text-xs p-3 rounded-xl bg-red-950/80 text-red-300 border border-red-800';
       statusEl.innerHTML = `❌ 연결 실패: ${escapeHtml(err.message)}`;
     }
     refreshIcons();
