@@ -1,0 +1,6 @@
+[
+ {"id":"bank","org":"신한은행","url":"https://www.shinhan.com/","domain":"shinhan.com"},
+ {"id":"card","org":"신한카드","url":"https://www.shinhancard.com/","domain":"shinhancard.com"},
+ {"id":"life","org":"신한라이프","url":"https://www.shinhanlife.co.kr/","domain":"shinhanlife.co.kr"},
+ {"id":"securities","org":"신한투자증권","url":"https://www.shinhansec.com/","domain":"shinhansec.com"}
+]
