@@ -1,0 +1,14 @@
+{
+  "name": "care-shield",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "monitor": "node scripts/collect-public.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check shield/app.js && node --check api/shield-report.js",
+    "build": "node scripts/build-static.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

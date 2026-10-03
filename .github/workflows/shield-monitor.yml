@@ -1,0 +1,35 @@
+name: SHIELD public observation
+on:
+  schedule:
+    - cron: '0 23 * * *' # 08:00 Asia/Seoul; Actions may be delayed
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['config/shield-targets.json', 'lib/public-monitor.mjs', 'scripts/collect-public.mjs', '.github/workflows/shield-monitor.yml']
+permissions:
+  contents: write
+concurrency:
+  group: shield-public-observation
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - run: npm run monitor
+      - name: Save public observations
+        run: |
+          git config user.name 'shield-monitor[bot]'
+          git config user.email 'shield-monitor@users.noreply.github.com'
+          git add shield/data/latest.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(shield): update public homepage observations'
+            git push origin HEAD:main
+          fi

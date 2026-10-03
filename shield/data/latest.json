@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-10-03T04:00:26.031Z",
+  "mode": "public-observation",
+  "baselineAt": null,
+  "results": [
+    {
+      "id": "bank",
+      "org": "신한은행",
+      "url": "https://www.shinhan.com/",
+      "domain": "shinhan.com",
+      "checkedAt": "2026-10-03T04:00:26.025Z",
+      "status": "collection-error",
+      "durationMs": 4,
+      "error": "EAI_AGAIN"
+    },
+    {
+      "id": "card",
+      "org": "신한카드",
+      "url": "https://www.shinhancard.com/",
+      "domain": "shinhancard.com",
+      "checkedAt": "2026-10-03T04:00:26.029Z",
+      "status": "collection-error",
+      "durationMs": 1,
+      "error": "EAI_AGAIN"
+    },
+    {
+      "id": "life",
+      "org": "신한라이프",
+      "url": "https://www.shinhanlife.co.kr/",
+      "domain": "shinhanlife.co.kr",
+      "checkedAt": "2026-10-03T04:00:26.030Z",
+      "status": "collection-error",
+      "durationMs": 0,
+      "error": "EAI_AGAIN"
+    },
+    {
+      "id": "securities",
+      "org": "신한투자증권",
+      "url": "https://www.shinhansec.com/",
+      "domain": "shinhansec.com",
+      "checkedAt": "2026-10-03T04:00:26.030Z",
+      "status": "collection-error",
+      "durationMs": 0,
+      "error": "EAI_AGAIN"
+    }
+  ],
+  "changes": [],
+  "baselines": [],
+  "history": [
+    {
+      "at": "2026-10-03T04:00:26.031Z",
+      "observed": 0,
+      "failed": 4,
+      "changes": 0
+    }
+  ],
+  "message": "공개 홈페이지 관찰 결과. 개인정보 유출·침해 여부를 판정하지 않습니다."
+}
